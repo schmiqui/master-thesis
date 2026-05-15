@@ -1,0 +1,303 @@
+GRAPH ID = 1
+Graph6: WsP@PGOCG??@?AAA??_CG?????G??oG@O?@C?O`??c@?CCO
+Graph: Graph with 24 nodes and 36 edges
+The chosen 2-factor contains 9 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 24
+Original Girth: 3
+Result Nodes:   48
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 2
+Graph6: OsX___??G@_E?BB??WGEC
+Graph: Graph with 16 nodes and 24 edges
+The chosen 2-factor contains 4 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 16
+Original Girth: 3
+Result Nodes:   32
+Result Girth:   3
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 3
+Graph6: SsX___??G@_E?A?@_?O?B??KK??E?GE?O
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 8 disjoint cycles.
+Spanning tree tried 3
+Original Nodes: 20
+Original Girth: 3
+Result Nodes:   40
+Result Girth:   3
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 4
+Graph6: WsX___??G@?C?E?D?@??D?@C?@_??O??K??BB???E??_W?C
+Graph: Graph with 24 nodes and 36 edges
+The chosen 2-factor contains 4 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 24
+Original Girth: 3
+Result Nodes:   48
+Result Girth:   3
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 5
+Graph6: QsP`?gQ?o?_@?AA@??WOC?@C?_g
+Graph: Graph with 18 nodes and 27 edges
+The chosen 2-factor contains 4 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 18
+Original Girth: 4
+Result Nodes:   36
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 6
+Graph6: QsT`?kG?G@?A?C?B?@O?H?_C?BG
+Graph: Graph with 18 nodes and 27 edges
+The chosen 2-factor contains 6 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 18
+Original Girth: 4
+Result Nodes:   36
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 7
+Graph6: QsP@PGSEO??@?A?A??g?K?GgA@O
+Graph: Graph with 18 nodes and 27 edges
+The chosen 2-factor contains 9 disjoint cycles.
+Spanning tree tried 97
+Original Nodes: 18
+Original Girth: 4
+Result Nodes:   36
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 8
+Graph6: SsP@@GOD???@AA?I??G?DA@G?COC_GF??
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 5 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 9
+Graph6: SsP`?cQ@??_A?A?A??g?KAG?@?G?DGOA_
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 3 disjoint cycles.
+Spanning tree tried 3
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 10
+Graph6: SsP@HOODO??@?A?I??_CG??c?a??BGO@O
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 4 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 11
+Graph6: SsP`?oO@OD`??@?@??O?C??S?@_@?gC@O
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 2 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 12
+Graph6: SsP@HOODO??@?A?A??o?G?GGAAO@A_OAO
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 5 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 13
+Graph6: SsT`?_??G@?K?A?@_IO?a?_CAG?G?OO?K
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 3 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 14
+Graph6: SsP@@GOC??@@?E?I?G?CHA_GC??@CG?aG
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 3 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 15
+Graph6: SsP@HOODO??@?A?A??_CG??gGA_@AO@A_
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 3 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 16
+Graph6: SsP@HOODO??@?A?A??_CI??_?a_@AOO@O
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 3 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 17
+Graph6: SsP@@WSC_??@?AAa??_?G??c?A_@@O?_g
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 10 disjoint cycles.
+Spanning tree tried 2
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 18
+Graph6: SsP@HOODO??@?A?i??_?K?G_??O?@WO@G
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 6 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 19
+Graph6: SsP@HOODO??@?A?i??_?K??g??OO?W@@G
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 10 disjoint cycles.
+100 spanning trees tried...
+200 spanning trees tried...
+300 spanning trees tried...
+Spanning tree tried 351
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 20
+Graph6: SsT`?kG?GD?A?C?@??_?E??g?@G?OG?@c
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 4 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 21
+Graph6: SsT`Og??G@?C?C?C?@G?L?A_?D?A?GC?S
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 3 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 22
+Graph6: SsP@PGSEO??@?A?A??_?G??K?BG@D?CA_
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 2 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 23
+Graph6: SsT`?c??G@?C?C?A_?oO_?AG?D?C?WI?_
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 3 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 24
+Graph6: SsP@PGPD_??@?A?A??_?K??g?@_O?g@AO
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 10 disjoint cycles.
+100 spanning trees tried...
+200 spanning trees tried...
+300 spanning trees tried...
+Spanning tree tried 305
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 25
+Graph6: SsP@PGSEO??@?A?A??o?G??c?@_@A_C?W
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 5 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 26
+Graph6: SsT`?c??G@?C?C?A_?oO_?AG?D?A?WK?_
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 6 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   4
+Hamiltonian:    True
+------------------------------
+GRAPH ID = 27
+Graph6: SsT`?kG?G@?A?c?A?@??C??S??o?HO?IG
+Graph: Graph with 20 nodes and 30 edges
+The chosen 2-factor contains 4 disjoint cycles.
+Spanning tree tried 1
+Original Nodes: 20
+Original Girth: 4
+Result Nodes:   40
+Result Girth:   5
+Hamiltonian:    True
+------------------------------

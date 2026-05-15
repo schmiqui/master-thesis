@@ -1,554 +1,296 @@
-import random
+import csv
 
-import networkx as nx
 import matplotlib.pyplot as plt
-# from random_k_g_non_ham_graph_generator import best_regular_graph_near_tree
+import networkx as nx
 
+from lift_support import (
+    double_cover_from_cross_mask,
+    has_hamiltonian_cycle,
+    normalized_edge,
+    parse_adjacency_list_text,
+    relabel_sorted_integers,
+)
 
-def get_clean_2_factor(G):
-    """
-    Finds a 2-factor by finding a perfect matching and taking its complement.
-    This ensures the 2-factor consists of cycles present in G (length >= girth).
-    """
-    # Find a perfect matching
-    # max_weight_matching with maxcardinality=True finds a perfect matching in k-regular graphs
-    matching = nx.complementary_edges = nx.maximal_matching(G)
-    # For a guaranteed perfect matching in k-regular bridgeless graphs:
-    m = nx.max_weight_matching(G, maxcardinality=True)
+HAMILTONICITY_VERTEX_CUTOFF = 24
 
-    TF = nx.Graph()
-    TF.add_nodes_from(G.nodes())
-    # The 2-factor is all edges NOT in the perfect matching
-    for u, v in G.edges():
-        if (u, v) not in m and (v, u) not in m:
-            TF.add_edge(u, v)
-
-    return TF, m
-
-
-def lift_to_hamiltonian(G):
-    n_nodes = list(G.nodes())
-    n = len(n_nodes)
-    # Map nodes to 0..n-1 to avoid index collisions
-    mapping = {node: i for i, node in enumerate(n_nodes)}
-    G_mapped = nx.relabel_nodes(G, mapping)
-
-    # 1. Find a 2-factor that inherits G's girth
-    TF, matching = get_clean_2_factor(G_mapped)
-    cycles = [list(c) for c in nx.connected_components(TF)]
-
-    # 2. Initialize all edges as 'parallel'
-    lifted_edges = {tuple(sorted(edge)): 'parallel' for edge in G_mapped.edges()}
-
-    # 3. Cross exactly one edge per cycle in the 2-factor
-    # This turns each cycle of length L into one cycle of length 2L
-    for cycle_nodes in cycles:
-        u = cycle_nodes[0]
-        v = list(TF.neighbors(u))[0]
-        lifted_edges[tuple(sorted((u, v)))] = 'cross'
-
-    # 4. Merge these 2L-length cycles using edges from the Matching
-    if len(cycles) > 1:
-        Meta = nx.Graph()
-        # Nodes in Meta are indices of cycles
-        # Edges in Meta are edges in the matching that connect different cycles
-        for (u, v) in matching:
-            c_u = next(i for i, c in enumerate(cycles) if u in c)
-            c_v = next(i for i, c in enumerate(cycles) if v in c)
-            if c_u != c_v:
-                Meta.add_edge(c_u, c_v, edge=(u, v))
-
-        # Use a Spanning Tree to connect all cycle-components
-        tree = nx.minimum_spanning_tree(Meta)
-        for _, _, data in tree.edges(data=True):
-            u_g, v_g = data['edge']
-            lifted_edges[tuple(sorted((u_g, v_g)))] = 'cross'
-
-    # 5. Build the Hamiltonian Graph H
-    H = nx.Graph()
-    for (u, v), edge_type in lifted_edges.items():
-        if edge_type == 'parallel':
-            H.add_edge(u, v)
-            H.add_edge(u + n, v + n)
-        else:
-            H.add_edge(u, v + n)
-            H.add_edge(v, u + n)
-
-    return H
-
-
-def verify_hamiltonian(G):
-    n = G.number_of_nodes()
-    nodes = list(G.nodes())
-    if n == 0: return False
-    start_node = nodes[0]
-    path = [start_node]
-    visited = {start_node}
-
-    def backtrack(curr):
-        if len(path) == n:
-            return G.has_edge(curr, start_node)
-        for neighbor in G.neighbors(curr):
-            if neighbor not in visited:
-                visited.add(neighbor)
-                path.append(neighbor)
-                if backtrack(neighbor): return True
-                path.pop()
-                visited.remove(neighbor)
-        return False
-
-    return backtrack(start_node)
-
-
-# --- Test with your graph ---
-graph_text = """
-0: 115  282  126
-1: 142  267  118
-2: 118  275  136
-3: 128  259  137
-4: 129  272  112
-5: 130  287  100
-6: 137  270  129
-7: 123  279  131
-8: 135  280  105
-9: 120  242  133
-10: 131  249  142
-11: 105  261  123
-12: 133  285  107
-13: 138  273  125
-14: 139  274  109
-15: 140  283   96
-16: 102  271  111
-17: 112  281  138
-18: 125  256  115
-19: 109  244  140
-20: 136  286  117
-21: 98  250  141
-22: 106  251  119
-23: 134  252  104
-24: 117  262  135
-25: 141  263  120
-26: 119  276   98
-27: 104  260  122
-28: 143  284   99
-29: 113  246  124
-30: 114  257  101
-31: 126  269  128
-32: 96  253  143
-33: 99  240  130
-34: 124  255  114
-35: 107  264  132
-36: 108  265  116
-37: 121  266   97
-38: 132  277  106
-39: 116  241  134
-40: 97  247  108
-41: 127  258  110
-42: 100  243  139
-43: 101  268  127
-44: 110  245  102
-45: 122  278  103
-46: 103  248  121
-47: 111  254  113
-48: 140  339  173
-49: 121  356  179
-50: 119  360  190
-51: 143  340  174
-52: 130  349  185
-53: 114  350  147
-54: 110  353  176
-55: 122  337  153
-56: 134  343  165
-57: 135  371  189
-58: 132  338  171
-59: 133  346  183
-60: 97  374  168
-61: 139  336  160
-62: 127  351  148
-63: 102  364  157
-64: 129  365  158
-65: 111  354  177
-66: 124  367  186
-67: 125  368  187
-68: 108  344  166
-69: 136  345  167
-70: 142  357  180
-71: 106  381  164
-72: 141  347  184
-73: 103  348  146
-74: 104  361  154
-75: 105  382  182
-76: 113  341  144
-77: 138  366  159
-78: 115  377  172
-79: 101  342  163
-80: 126  369  188
-81: 137  378  191
-82: 99  379  161
-83: 123  358  181
-84: 107  359  145
-85: 120  372  151
-86: 116  362  155
-87: 117  363  156
-88: 118  375  169
-89: 128  352  149
-90: 112  355  178
-91: 100  380  162
-92: 109  383  175
-93: 98  373  152
-94: 131  376  170
-95: 96  370  150
-96: 15   32   95
-97: 37   40   60
-98: 26   21   93
-99: 28   33   82
-100: 5   42   91
-101: 30   43   79
-102: 44   16   63
-103: 45   46   73
-104: 23   27   74
-105: 8   11   75
-106: 38   22   71
-107: 12   35   84
-108: 40   36   68
-109: 14   19   92
-110: 41   44   54
-111: 16   47   65
-112: 4   17   90
-113: 47   29   76
-114: 34   30   53
-115: 18    0   78
-116: 36   39   86
-117: 20   24   87
-118: 1    2   88
-119: 22   26   50
-120: 25    9   85
-121: 46   37   49
-122: 27   45   55
-123: 11    7   83
-124: 29   34   66
-125: 13   18   67
-126: 0   31   80
-127: 43   41   62
-128: 31    3   89
-129: 6    4   64
-130: 33    5   52
-131: 7   10   94
-132: 35   38   58
-133: 9   12   59
-134: 39   23   56
-135: 24    8   57
-136: 2   20   69
-137: 3    6   81
-138: 17   13   77
-139: 42   14   61
-140: 19   15   48
-141: 21   25   72
-142: 10    1   70
-143: 32   28   51
-144: 261   76  199
-145: 269   84  195
-146: 282   73  223
-147: 262   53  200
-148: 275   62  212
-149: 276   89  213
-150: 286   95  216
-151: 270   85  196
-152: 281   93  205
-153: 243   55  206
-154: 259   74  198
-155: 272   86  209
-156: 287   87  234
-157: 249   63  193
-158: 277   64  214
-159: 285   77  227
-160: 247   61  228
-161: 267   82  194
-162: 279   91  202
-163: 264   79  230
-164: 256   71  192
-165: 244   56  207
-166: 253   68  220
-167: 254   69  221
-168: 273   60  210
-169: 274   88  211
-170: 283   94  224
-171: 271   58  239
-172: 263   78  201
-173: 248   48  229
-174: 260   51  237
-175: 280   92  203
-176: 242   54  204
-177: 250   65  217
-178: 278   90  238
-179: 240   49  197
-180: 255   70  222
-181: 268   83  233
-182: 284   75  225
-183: 246   59  226
-184: 257   72  235
-185: 241   52  215
-186: 251   66  218
-187: 252   67  219
-188: 265   80  231
-189: 245   57  208
-190: 258   50  236
-191: 266   81  232
-192: 312  164  362
-193: 306  157  383
-194: 301  161  341
-195: 290  145  374
-196: 298  151  348
-197: 326  179  376
-198: 289  154  381
-199: 319  144  370
-200: 294  147  379
-201: 321  172  367
-202: 288  162  350
-203: 291  175  351
-204: 316  176  352
-205: 299  152  361
-206: 300  153  382
-207: 313  165  363
-208: 334  189  347
-209: 295  155  359
-210: 296  168  372
-211: 297  169  356
-212: 305  148  380
-213: 330  149  342
-214: 307  158  353
-215: 332  185  378
-216: 292  150  364
-217: 293  177  365
-218: 302  186  366
-219: 329  187  336
-220: 314  166  375
-221: 315  167  360
-222: 327  180  338
-223: 308  146  373
-224: 309  170  337
-225: 310  182  343
-226: 311  183  371
-227: 320  159  354
-228: 335  160  355
-229: 322  173  368
-230: 303  163  377
-231: 304  188  339
-232: 317  191  340
-233: 328  181  346
-234: 323  156  344
-235: 324  184  345
-236: 325  190  357
-237: 331  174  369
-238: 318  178  349
-239: 333  171  358
-240: 179   33  289
-241: 185   39  292
-242: 176    9  294
-243: 153   42  295
-244: 165   19  296
-245: 189   44  297
-246: 183   29  299
-247: 160   40  301
-248: 173   46  288
-249: 157   10  303
-250: 177   21  305
-251: 186   22  306
-252: 187   23  307
-253: 166   32  308
-254: 167   47  309
-255: 180   34  310
-256: 164   18  311
-257: 184   30  312
-258: 190   41  290
-259: 154    3  314
-260: 174   27  291
-261: 144   11  316
-262: 147   24  293
-263: 172   25  318
-264: 163   35  319
-265: 188   36  320
-266: 191   37  321
-267: 161    1  322
-268: 181   43  323
-269: 145   31  324
-270: 151    6  325
-271: 171   16  298
-272: 155    4  326
-273: 168   13  300
-274: 169   14  328
-275: 148    2  302
-276: 149   26  329
-277: 158   38  304
-278: 178   45  330
-279: 162    7  331
-280: 175    8  332
-281: 152   17  333
-282: 146    0  313
-283: 170   15  334
-284: 182   28  315
-285: 159   12  317
-286: 150   20  335
-287: 156    5  327
-288: 202  248  360
-289: 198  240  354
-290: 195  258  349
-291: 203  260  338
-292: 216  241  346
-293: 217  262  374
-294: 200  242  337
-295: 209  243  367
-296: 210  244  342
-297: 211  245  369
-298: 196  271  336
-299: 205  246  339
-300: 206  273  364
-301: 194  247  347
-302: 218  275  348
-303: 230  249  361
-304: 231  277  382
-305: 212  250  343
-306: 193  251  344
-307: 214  252  345
-308: 223  253  353
-309: 224  254  378
-310: 225  255  355
-311: 226  256  380
-312: 192  257  340
-313: 207  282  341
-314: 220  259  350
-315: 221  284  377
-316: 204  261  362
-317: 232  285  363
-318: 238  263  375
-319: 199  264  356
-320: 227  265  357
-321: 201  266  358
-322: 229  267  359
-323: 234  268  368
-324: 235  269  383
-325: 236  270  370
-326: 197  272  351
-327: 222  287  352
-328: 233  274  365
-329: 219  276  376
-330: 213  278  371
-331: 237  279  372
-332: 215  280  373
-333: 239  281  379
-334: 208  283  366
-335: 228  286  381
-336: 298   61  219
-337: 294   55  224
-338: 291   58  222
-339: 299   48  231
-340: 312   51  232
-341: 313   76  194
-342: 296   79  213
-343: 305   56  225
-344: 306   68  234
-345: 307   69  235
-346: 292   59  233
-347: 301   72  208
-348: 302   73  196
-349: 290   52  238
-350: 314   53  202
-351: 326   62  203
-352: 327   89  204
-353: 308   54  214
-354: 289   65  227
-355: 310   90  228
-356: 319   49  211
-357: 320   70  236
-358: 321   83  239
-359: 322   84  209
-360: 288   50  221
-361: 303   74  205
-362: 316   86  192
-363: 317   87  207
-364: 300   63  216
-365: 328   64  217
-366: 334   77  218
-367: 295   66  201
-368: 323   67  229
-369: 297   80  237
-370: 325   95  199
-371: 330   57  226
-372: 331   85  210
-373: 332   93  223
-374: 293   60  195
-375: 318   88  220
-376: 329   94  197
-377: 315   78  230
-378: 309   81  215
-379: 333   82  200
-380: 311   91  212
-381: 335   71  198
-382: 304   75  206
-383: 324   92  193
+DEMO_ADJACENCY_TEXT = """
+1: 2 3 4
+2: 1 11 14
+3: 1 12 16
+4: 1 13 15
+5: 8 9 10
+6: 7 9 10
+7: 6 8 12
+8: 5 7 13
+9: 5 6 11
+10: 5 6 11
+11: 2 9 10
+12: 3 7 15
+13: 4 8 16
+14: 2 15 16
+15: 4 12 14
+16: 3 13 14
 """
 
 
-def parse_adj(text):
-    G = nx.Graph()
-    for line in text.strip().splitlines():
-        u, neighbors = line.split(":")
-        for v in neighbors.split():
-            G.add_edge(int(u), int(v))
-    return G
-
-# if __name__ == '__main__':
-#
-#     generated = True
-#
-#     G_base = None
-#     if generated:
-#         G_base = random_sparse_regular_graph_with_report(21, 10)
-#     else:
-#      G_base = parse_adj(graph_text)
-#     k = d = 2 * G_base.number_of_edges() / G_base.number_of_nodes()
-#     H_result = lift_to_hamiltonian(G_base)
-#
-#     print(f"Original Nodes: {G_base.number_of_nodes()}")
-#     print(f"Original Girth: {nx.girth(G_base)}")
-#     print(f"Result Nodes:   {H_result.number_of_nodes()}")
-#     print(f"Result Girth:   {nx.girth(H_result)}")
-#     print("=" * 30)
-#     print("STABILITY")
-#     print(f"Girth:          {nx.girth(H_result) == nx.girth(G_base)}")
-#     print(f"Regularity:     {all(d == k for _, d in H_result.degree())}")
-#     print(f"Hamiltonian:    {verify_hamiltonian(H_result)}")
-#
-#     print("=" * 30)
-#     nx.draw_circular(H_result, with_labels=True, node_color='orange')
-#     plt.show()
+def two_factor_edges_complement_of_max_matching(graph):
+    matching = nx.max_weight_matching(graph, maxcardinality=True)
+    tf = nx.Graph()
+    tf.add_nodes_from(graph.nodes())
+    for u, v in graph.edges():
+        if (u, v) not in matching and (v, u) not in matching:
+            tf.add_edge(u, v)
+    return tf, matching
 
 
-if __name__ == '__main__':
-    attempts = 20
-    n_max = 100
-    k = 9
-    hamiltonicity_threshold = 18
-    for _ in range(attempts):
-        n = random.randint(10, n_max)
-        G_base = best_regular_graph_near_tree(n, k)
-
-        k  = 2 * G_base.number_of_edges() / G_base.number_of_nodes()
-        H_result = lift_to_hamiltonian(G_base)
-
-        print(f"Original Nodes: {G_base.number_of_nodes()}")
-        print(f"Original Girth: {nx.girth(G_base)}")
-        print(f"Result Nodes:   {H_result.number_of_nodes()}")
-        print(f"Result Girth:   {nx.girth(H_result)}")
-        print("==" * 30)
-        print("STABILITY")
-        print(f"Girth:          {nx.girth(H_result) == nx.girth(G_base)}")
-        print(f"Regularity:     {all(d == k for _, d in H_result.degree())}")
-        if n <= hamiltonicity_threshold:
-            print(f"Hamiltonian:    {verify_hamiltonian(H_result)}")
-            nx.draw_circular(H_result, with_labels=True, node_color='orange')
-            plt.show()
-        print("__" * 30)
+def two_factor_edges_complement_of_perfect_matching_or_none(graph):
+    matching = nx.max_weight_matching(graph, maxcardinality=True)
+    if len(matching) * 2 != graph.number_of_nodes():
+        return None, None
+    tf = nx.Graph()
+    tf.add_nodes_from(graph.nodes())
+    matching_edges = {normalized_edge(u, v) for u, v in matching}
+    for u, v in graph.edges():
+        if normalized_edge(u, v) not in matching_edges:
+            tf.add_edge(u, v)
+    return tf, matching
 
 
+def relabel_in_list_order(graph, node_order):
+    mapping = {node: i for i, node in enumerate(node_order)}
+    return nx.relabel_nodes(graph, mapping), len(node_order)
 
+
+def lift_double_cover_max_matching_mst_arbitrary_node_order(graph):
+    mapped, n = relabel_in_list_order(graph, list(graph.nodes()))
+    tf, matching = two_factor_edges_complement_of_max_matching(mapped)
+    cycles = [list(c) for c in nx.connected_components(tf)]
+    lifted = {normalized_edge(u, v): False for u, v in mapped.edges()}
+    for cycle in cycles:
+        u = cycle[0]
+        v = next(iter(tf.neighbors(u)))
+        lifted[normalized_edge(u, v)] = True
+    if len(cycles) > 1:
+        meta = nx.Graph()
+        for u, v in matching:
+            cu = next(i for i, c in enumerate(cycles) if u in c)
+            cv = next(i for i, c in enumerate(cycles) if v in c)
+            if cu != cv:
+                meta.add_edge(cu, cv, edge=(u, v))
+        tree = nx.minimum_spanning_tree(meta)
+        for _, _, data in tree.edges(data=True):
+            ug, vg = data["edge"]
+            lifted[normalized_edge(ug, vg)] = True
+    return double_cover_from_cross_mask(n, lifted)
+
+
+def lift_double_cover_max_matching_mst_sorted_labels(graph):
+    mapped, n = relabel_sorted_integers(graph)
+    tf, matching = two_factor_edges_complement_of_max_matching(mapped)
+    cycles = [sorted(c) for c in nx.connected_components(tf)]
+    cross = {normalized_edge(u, v): False for u, v in mapped.edges()}
+    for cycle in cycles:
+        u = cycle[0]
+        v = next(iter(tf.neighbors(u)))
+        cross[normalized_edge(u, v)] = True
+    if len(cycles) > 1:
+        meta = nx.Graph()
+        for u, v in matching:
+            cu = next(i for i, c in enumerate(cycles) if u in c)
+            cv = next(i for i, c in enumerate(cycles) if v in c)
+            if cu != cv:
+                meta.add_edge(cu, cv, base_edge=(u, v))
+        tree = nx.minimum_spanning_tree(meta)
+        for _, _, data in tree.edges(data=True):
+            cross[normalized_edge(*data["base_edge"])] = True
+    return double_cover_from_cross_mask(n, cross)
+
+
+def lift_double_cover_matching_glue_first_cycle_then_matching(graph):
+    mapped, n = relabel_sorted_integers(graph)
+    tf, matching_edges = two_factor_edges_complement_of_max_matching(mapped)
+    cycle_comps = [list(c) for c in nx.connected_components(tf)]
+    node_to_cycle = {node: i for i, cycle in enumerate(cycle_comps) for node in cycle}
+    cross = {normalized_edge(u, v): False for u, v in mapped.edges()}
+    first = cycle_comps[0]
+    u0, v0 = first[0], next(iter(tf.neighbors(first[0])))
+    cross[normalized_edge(u0, v0)] = True
+    connected = {0}
+    remaining = set(range(1, len(cycle_comps)))
+    while remaining:
+        found = False
+        for u, v in matching_edges:
+            c1, c2 = node_to_cycle[u], node_to_cycle[v]
+            if (c1 in connected and c2 in remaining) or (c2 in connected and c1 in remaining):
+                cross[normalized_edge(u, v)] = True
+                new_cycle = c2 if c1 in connected else c1
+                connected.add(new_cycle)
+                remaining.remove(new_cycle)
+                found = True
+                break
+        if not found:
+            break
+    return double_cover_from_cross_mask(n, cross)
+
+
+def lift_double_cover_algebraic_matching_tree(graph):
+    n = graph.number_of_nodes()
+    matching = nx.max_weight_matching(graph, maxcardinality=True)
+    matching_edges = {normalized_edge(u, v) for u, v in matching}
+    tf = nx.Graph()
+    for u, v in graph.edges():
+        if normalized_edge(u, v) not in matching_edges:
+            tf.add_edge(u, v)
+    cycles = [list(c) for c in nx.connected_components(tf)]
+    node_to_cycle = {node: i for i, c in enumerate(cycles) for node in c}
+    cross = {normalized_edge(u, v): False for u, v in graph.edges()}
+    for cycle in cycles:
+        u, v = cycle[0], next(iter(tf.neighbors(cycle[0])))
+        cross[normalized_edge(u, v)] = True
+    meta = nx.Graph()
+    for u, v in matching_edges:
+        c1, c2 = node_to_cycle[u], node_to_cycle[v]
+        if c1 != c2:
+            meta.add_edge(c1, c2, edge=(u, v))
+    tree = nx.minimum_spanning_tree(meta)
+    for _, _, data in tree.edges(data=True):
+        u_g, v_g = data["edge"]
+        cross[normalized_edge(u_g, v_g)] = True
+    return double_cover_from_cross_mask(n, cross)
+
+
+def lift_double_cover_matching_mst_with_connectivity_repair(graph):
+    n = graph.number_of_nodes()
+    mapped, _ = relabel_sorted_integers(graph)
+    tf, matching = two_factor_edges_complement_of_perfect_matching_or_none(mapped)
+    if tf is None:
+        return None
+    cycles = [list(c) for c in nx.connected_components(tf)]
+    node_to_cycle = {node: i for i, c in enumerate(cycles) for node in c}
+    cross = {normalized_edge(u, v): False for u, v in mapped.edges()}
+    u0, v0 = cycles[0][0], next(iter(tf.neighbors(cycles[0][0])))
+    cross[normalized_edge(u0, v0)] = True
+    if len(cycles) > 1:
+        meta = nx.Graph()
+        for u, v in matching:
+            c1, c2 = node_to_cycle[u], node_to_cycle[v]
+            if c1 != c2:
+                meta.add_edge(c1, c2, edge=(u, v))
+        tree = nx.minimum_spanning_tree(meta)
+        for _, _, data in tree.edges(data=True):
+            cross[normalized_edge(*data["edge"])] = True
+
+    def build_from_cross(edge_cross):
+        return double_cover_from_cross_mask(
+            n, {e: bool(v) for e, v in edge_cross.items()}
+        )
+
+    lifted = build_from_cross(cross)
+    if not nx.is_connected(lifted):
+        components = list(nx.connected_components(lifted))
+        for u, v in matching:
+            if (u in components[0] and v in components[1]) or (
+                v in components[0] and u in components[1]
+            ):
+                key = normalized_edge(u, v)
+                cross[key] = not cross[key]
+                lifted = build_from_cross(cross)
+                break
+    return lifted
+
+
+def csv_row_for_lift_experiment(index, G_base, H_result, hamiltonian_cutoff=HAMILTONICITY_VERTEX_CUTOFF):
+    n = G_base.number_of_nodes()
+    m = G_base.number_of_edges()
+    k = int(2 * m / n)
+    g = nx.girth(G_base)
+    h_girth = nx.girth(H_result)
+    articulation_count = len(list(nx.articulation_points(G_base)))
+    hamiltonian = (
+        has_hamiltonian_cycle(H_result) if n <= hamiltonian_cutoff else None
+    )
+    return {
+        "id": index,
+        "k": k,
+        "original_nodes": n,
+        "original_edges": m,
+        "original_girth": g,
+        "original_vertex_connectivity": nx.node_connectivity(G_base),
+        "original_edge_connectivity": nx.edge_connectivity(G_base),
+        "result_nodes": H_result.number_of_nodes(),
+        "result_girth": h_girth,
+        "result_vertex_connectivity": nx.node_connectivity(H_result),
+        "result_edge_connectivity": nx.edge_connectivity(H_result),
+        "has_articulation": articulation_count > 0,
+        "girth_preserved": h_girth == g,
+        "is_k_regular": all(deg == k for _, deg in H_result.degree()),
+        "hamiltonian": hamiltonian,
+        "original_graph6": nx.to_graph6_bytes(G_base, header=False).decode().strip(),
+        "result_graph6": nx.to_graph6_bytes(H_result, header=False).decode().strip(),
+    }
+
+
+def write_lift_experiment_csv(rows, path):
+    with open(path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def run_lift_experiment_csv(graphs, path="tested.csv", lift=lift_double_cover_max_matching_mst_arbitrary_node_order):
+    rows = []
+    for i, G_base in enumerate(graphs):
+        k = int(2 * G_base.number_of_edges() / G_base.number_of_nodes())
+        print(f"{i} k={k}, g={nx.girth(G_base)}")
+        H_result = lift(G_base)
+        rows.append(csv_row_for_lift_experiment(i, G_base, H_result))
+    write_lift_experiment_csv(rows, path)
+    return rows
+
+
+def draw_double_cover_layers(graph, original_n=None):
+    if original_n is None:
+        original_n = graph.number_of_nodes() // 2
+    colors = ["lightblue" if node < original_n else "orange" for node in graph.nodes()]
+    edge_colors = []
+    for u, v in graph.edges():
+        same_layer = (u < original_n and v < original_n) or (u >= original_n and v >= original_n)
+        edge_colors.append("gray" if same_layer else "red")
+    pos = nx.spring_layout(graph, seed=42)
+    for node in graph.nodes():
+        if node >= original_n:
+            pos[node][0] += 2.0
+    plt.figure(figsize=(10, 6))
+    nx.draw(
+        graph,
+        pos,
+        with_labels=True,
+        node_color=colors,
+        edge_color=edge_colors,
+        node_size=300,
+        font_size=8,
+    )
+    plt.show()
+
+
+def main():
+    G_base = parse_adjacency_list_text(DEMO_ADJACENCY_TEXT)
+    k = 2 * G_base.number_of_edges() / G_base.number_of_nodes()
+    H_result = lift_double_cover_algebraic_matching_tree(G_base)
+    print(f"Original Nodes: {G_base.number_of_nodes()}")
+    print(f"Original Girth: {nx.girth(G_base)}")
+    print(f"Result Nodes:   {H_result.number_of_nodes()}")
+    print(f"Result Girth:   {nx.girth(H_result)}")
+    print("=" * 30)
+    print("STABILITY")
+    print(f"Girth:          {nx.girth(H_result) == nx.girth(G_base)}")
+    print(f"Regularity:     {all(deg == k for _, deg in H_result.degree())}")
+    print(f"Hamiltonian:    {has_hamiltonian_cycle(H_result)}")
+    print("=" * 30)
+    nx.draw(G_base, with_labels=True, node_color="orange")
+    plt.show()
+
+
+# https://houseofgraphs.org/graphs/981
+if __name__ == "__main__":
+    main()
