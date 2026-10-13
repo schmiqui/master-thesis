@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hamiltonovský 2-lift</title>
+<style>
+:root{color-scheme:light}
+body{background:#fff;color:#000;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;padding-inline:16px;padding-block:20px 40px}
+#page{max-width:900px;margin:0 auto}
+h1{font-size:23px;margin:0 0 8px}
+h2{font-size:18px;margin:34px 0 8px;padding-bottom:3px;border-bottom:1px solid #ccc}
+h3{font-size:15px;margin:18px 0 4px}
+p{margin:6px 0;max-width:75ch}
+ol,ul{margin:6px 0;padding-left:24px;max-width:75ch}
+li{margin:3px 0}
+.idea{border-left:4px solid #999;padding:6px 12px;background:#f5f5f5;margin:12px 0}
+.lemma{border:1px solid #ccc;padding:8px 12px;margin:10px 0}
+.lemma .h{font-weight:bold}
+.proof{margin:6px 0 6px 0}
+.proof:before{content:"Dôkaz. ";font-style:italic}
+.qed{float:right}
+textarea{width:100%;box-sizing:border-box;font-family:Menlo,Consolas,monospace;font-size:13px;background:#fff;color:#000;border:1px solid #999}
+#src{height:110px}
+.out{height:64px}
+svg{width:100%;height:auto;border:1px solid #ccc;background:#fff;display:block}
+svg.small{max-width:520px}
+.wide{overflow-x:auto}
+table{border-collapse:collapse;font-family:Menlo,Consolas,monospace;font-size:12px;margin:4px 0}
+td,th{border:1px solid #999;padding:2px 5px;text-align:center;white-space:nowrap}
+th{background:#eee;font-family:Helvetica,Arial,sans-serif;font-weight:normal;text-align:left}
+.y{background:#ffef99}
+.r{background:#f6c6c6}
+.g{background:#c9ecc9}
+.b{background:#cfe0fb}
+.c{color:#c60;font-weight:bold}
+.err{color:#b00}
+.small{font-size:13px;color:#444}
+code,.m{font-family:Menlo,Consolas,monospace;font-size:13px}
+#steps{font-size:13px;line-height:1.9}
+#steps a{color:#000;text-decoration:none;border:1px solid #bbb;border-radius:3px;padding:1px 6px;margin-right:4px;white-space:nowrap;cursor:pointer}
+#steps a.on{background:#000;color:#fff;border-color:#000}
+.box{border:1px solid #ccc;padding:8px 12px;margin:8px 0}
+.box b{display:inline-block;min-width:110px}
+nav.toc a{color:#000}
+</style>
+</head>
+<body>
+
+
+<div id="page">
+<h1>Hamiltonovský 2-lift regulárneho grafu</h1>
+<p>Z k-regulárneho grafu G zostrojíme graf H s dvojnásobným počtom vrcholov, rovnakým stupňom a obvodom aspoň takým ako G, ktorý má hamiltonovskú kružnicu.</p>
+<nav class="toc"><p>Obsah: <a href="#popis">1. Presný popis konštrukcie</a> · <a href="#dokaz">2. Dôkaz</a> · <a href="#postup">3. Krok po kroku</a></p></nav>
+
+<!-- =============================================================== -->
+<h2 id="popis">1. Presný popis konštrukcie</h2>
+
+<h3>2-lift</h3>
+<p>Nech G je graf s n vrcholmi. <b>2-lift</b> H vznikne tak, že každý vrchol v dostane dve kópie: <b>v</b> (kópia 0) a <b>v'</b> (kópia 1). Pre každú hranu uv sa rozhodneme, či je</p>
+<ul>
+<li><b>parallel</b>: v H vzniknú hrany u–v a u'–v' (hrana zostane v rámci kópie),</li>
+<li><b>cross</b>: v H vzniknú hrany u–v' a u'–v (hrana prejde medzi kópiami).</li>
+</ul>
+<p>H má 2n vrcholov a každý vrchol má v H rovnaký stupeň ako v G. Celá konštrukcia teda rozhoduje iba o tom, <b>ktoré hrany budú cross</b>.</p>
+<svg class="small" viewBox="0 0 520 190" role="img" aria-label="Trojuholník a jeho lift">
+<line x1="80" y1="30" x2="30" y2="130" stroke="#000" stroke-width="1.5"/><line x1="30" y1="130" x2="130" y2="130" stroke="#000" stroke-width="1.5"/><line x1="130" y1="130" x2="80" y2="30" stroke="#e07b00" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="80" cy="30" r="13" fill="#fff" stroke="#000"/><text x="80" y="35" text-anchor="middle" font-size="12">1</text>
+<circle cx="30" cy="130" r="13" fill="#fff" stroke="#000"/><text x="30" y="135" text-anchor="middle" font-size="12">2</text>
+<circle cx="130" cy="130" r="13" fill="#fff" stroke="#000"/><text x="130" y="135" text-anchor="middle" font-size="12">3</text>
+<text x="80" y="170" text-anchor="middle" font-size="12">G, hrana 3–1 je cross</text>
+<line x1="175" y1="80" x2="225" y2="80" stroke="#000" stroke-width="1.5"/><polygon points="230,80 220,75 220,85" fill="#000"/>
+<line x1="260" y1="40" x2="360" y2="40" stroke="#000" stroke-width="1.5"/><line x1="360" y1="40" x2="460" y2="40" stroke="#000" stroke-width="1.5"/>
+<line x1="260" y1="120" x2="360" y2="120" stroke="#000" stroke-width="1.5"/><line x1="360" y1="120" x2="460" y2="120" stroke="#000" stroke-width="1.5"/>
+<line x1="460" y1="40" x2="260" y2="120" stroke="#e07b00" stroke-width="2" stroke-dasharray="5 4"/><line x1="460" y1="120" x2="260" y2="40" stroke="#e07b00" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="260" cy="40" r="13" fill="#fff" stroke="#000"/><text x="260" y="45" text-anchor="middle" font-size="12">1</text>
+<circle cx="360" cy="40" r="13" fill="#fff" stroke="#000"/><text x="360" y="45" text-anchor="middle" font-size="12">2</text>
+<circle cx="460" cy="40" r="13" fill="#fff" stroke="#000"/><text x="460" y="45" text-anchor="middle" font-size="12">3</text>
+<circle cx="260" cy="120" r="13" fill="#fff" stroke="#000"/><text x="260" y="125" text-anchor="middle" font-size="12">1'</text>
+<circle cx="360" cy="120" r="13" fill="#fff" stroke="#000"/><text x="360" y="125" text-anchor="middle" font-size="12">2'</text>
+<circle cx="460" cy="120" r="13" fill="#fff" stroke="#000"/><text x="460" y="125" text-anchor="middle" font-size="12">3'</text>
+<text x="490" y="44" font-size="11">kópia 0</text><text x="490" y="124" font-size="11">kópia 1</text>
+<text x="360" y="170" text-anchor="middle" font-size="12">lift H: kružnica 1 2 3 1' 2' 3'</text>
+</svg>
+<p class="idea"><b>Hlavná myšlienka.</b> Keď hamiltonovskú kružnicu v H „sploštíme“ (zmažeme čiarky), dostaneme uzavretý sled v G, ktorý prejde <b>každým vrcholom dvakrát</b>. Pri trojuholníku je to 1, 2, 3, 1, 2, 3. Prvá návšteva vrcholu leží v kópii 0, druhá v kópii 1 a cross sú presne hrany, na ktorých sa kópia mení. Konštrukcia preto ide opačne: najprv nájde v G sled, ktorý navštívi každý vrchol dvakrát, a potom ho „roztiahne“ do dvoch kópií.</p>
+
+<h3>Vstup a predpoklady</h3>
+<ul>
+<li>G je súvislý graf s n vrcholmi (typicky k-regulárny s obvodom g).</li>
+<li><b>M</b> je perfektné párovanie: každý vrchol leží na práve jednej hrane z M. Partnera vrcholu x označíme x̄ (teda x x̄ ∈ M).</li>
+<li><b>F</b> je 2-faktor disjunktný s M: každý vrchol leží na práve dvoch hranách z F a hrany F tvoria kružnice.</li>
+<li>Hrany F ∪ M tvoria súvislý graf. Pre kubický graf je F = E(G) − M a podmienka platí automaticky.</li>
+</ul>
+
+<h3>Konštrukcia</h3>
+<ol>
+<li><b>M a F.</b> Nájdi perfektné párovanie M (napríklad Edmondsovým algoritmom). Pre kubický graf polož F = všetky ostatné hrany. Pre k &gt; 3 nájdi v G − M 2-faktor F (Tutteho redukcia na párovanie). Ostatné hrany sa nepoužijú a budú parallel.</li>
+<li><b>Zdvojenie.</b> Vytvor multigraf G* = F + 2M, teda hrany F raz a každú hranu z M dvakrát. Každý vrchol má v G* stupeň 4.</li>
+<li><b>Eulerovský ťah.</b> Nájdi uzavretý ťah T, ktorý prejde každou hranou G* práve raz (napríklad Hierholzerovým algoritmom). T navštívi každý vrchol práve dvakrát.</li>
+<li><b>Odstránenie návratov.</b> <i>Návrat</i> je úsek x → x̄ → x po oboch kópiách hrany x x̄. Kým T obsahuje návrat:
+  <ul><li>vrchol x̄ sa v T vyskytuje ešte raz, ako y → x̄ → z;</li>
+  <li><b>otoč</b> časť T medzi dvoma výskytmi x̄ (napíš ju odzadu). Dá sa otočiť ktorákoľvek z dvoch strán, výsledok je ten istý ťah, iba prejdený opačne. Prakticky sa otáča kratšia strana.</li></ul></li>
+<li><b>Čítanie od hrany z M.</b> Zapíš T ako postupnosť w<sub>1</sub>, …, w<sub>2n</sub> tak, aby w<sub>1</sub>w<sub>2</sub> bola hrana z M.</li>
+<li><b>Očíslovanie návštev.</b> Polož h<sub>k</sub> = 0, ak je w<sub>k</sub> prvý výskyt daného vrcholu, a h<sub>k</sub> = 1, ak je druhý.</li>
+<li><b>Cross hrany.</b> Hrana e je cross práve vtedy, keď na kroku po e (vrátane kroku w<sub>2n</sub> → w<sub>1</sub>) platí h<sub>k</sub> ≠ h<sub>k+1</sub>. Všetky ostatné hrany G sú parallel.</li>
+<li><b>Výstup.</b> H je 2-lift G s takto určenými cross hranami a (w<sub>1</sub>, h<sub>1</sub>), …, (w<sub>2n</sub>, h<sub>2n</sub>) je jeho hamiltonovská kružnica (h = 1 znamená vrchol s čiarkou).</li>
+</ol>
+<p class="small">Zložitosť: párovanie O(n³), eulerovský ťah O(n), najviac n/2 opráv po O(n). Spolu polynomiálne.</p>
+
+<!-- =============================================================== -->
+<h2 id="dokaz">2. Dôkaz</h2>
+<p><b>Veta.</b> Za uvedených predpokladov je (w<sub>1</sub>, h<sub>1</sub>), …, (w<sub>2n</sub>, h<sub>2n</sub>) hamiltonovská kružnica v 2-lifte H. Ak je G k-regulárny s obvodom g, je H hamiltonovský k-regulárny graf s 2n vrcholmi a obvodom aspoň g.</p>
+
+<div class="lemma"><p class="h">Lema 1 (sled ⇒ hamiltonovská kružnica)</p>
+<p>Nech W = w<sub>1</sub>, …, w<sub>2n</sub> je uzavretý sled v G, v ktorom sa každý vrchol vyskytuje práve dvakrát, a nech h<sub>k</sub> = 0 pri prvom výskyte a h<sub>k</sub> = 1 pri druhom. Predpokladajme, že pri každej hrane sa všetky jej prechody vo W zhodujú v tom, či sa h mení. Ak hranu označíme za cross práve vtedy, keď sa na nej h mení, potom (w<sub>1</sub>, h<sub>1</sub>), …, (w<sub>2n</sub>, h<sub>2n</sub>) je hamiltonovská kružnica v H.</p>
+<p class="proof">Každý vrchol v sa vo W vyskytuje raz s h = 0 a raz s h = 1, takže postupnosť obsahuje v aj v', každý práve raz. To je všetkých 2n vrcholov H. Pre krok w<sub>k</sub> → w<sub>k+1</sub> po hrane e: ak sa h nemení, je e parallel a H obsahuje hranu, ktorá spája oba vrcholy v tej istej kópii. Ak sa h mení, je e cross a H obsahuje hranu medzi rôznymi kópiami. V oboch prípadoch je (w<sub>k</sub>, h<sub>k</sub>)(w<sub>k+1</sub>, h<sub>k+1</sub>) hranou H, a to aj pre krok w<sub>2n</sub> → w<sub>1</sub>. <span class="qed">∎</span></p></div>
+
+<div class="lemma"><p class="h">Lema 2 (eulerovský ťah navštívi každý vrchol dvakrát)</p>
+<p>G* = F + 2M má eulerovský ťah a každý jeho eulerovský ťah prejde každým vrcholom práve dvakrát.</p>
+<p class="proof">Každý vrchol x má v G* dve hrany z F a dve kópie hrany x x̄, teda stupeň 4. G* je súvislý, lebo F ∪ M je súvislý. Podľa Eulerovej vety má eulerovský ťah. Každý prechod vrcholom spotrebuje dve jeho hrany a ťah použije všetky štyri, preto prejde vrcholom práve dvakrát. <span class="qed">∎</span></p></div>
+
+<p>Hrany z F ťah použije raz, takže pri nich sa prechody nemôžu nezhodovať. Hrany z M použije dvakrát a treba zabezpečiť, aby sa tieto dva prechody zhodovali. Rozpor vznikne práve pri návrate x → x̄ → x, kde je h = 0, 0, 1: prvý prechod hranou x x̄ hovorí parallel, druhý cross.</p>
+
+<div class="lemma"><p class="h">Lema 3 (odstránenie návratu)</p>
+<p>Nech ťah obsahuje návrat x → x̄ → x a druhý prechod vrcholom x̄ je y → x̄ → z. Ak otočíme úsek ťahu medzi dvoma výskytmi x̄, tak (a) dostaneme opäť eulerovský ťah, (b) návrat pri x̄ zmizne a (c) nikde nevznikne nový návrat.</p>
+<p class="proof">(a) Otočenie úseku nemení, ktoré hrany sa použijú, iba smer ich prechodu. Krajné hrany úseku (hrana y x̄ a jedna kópia x x̄) zostanú tie isté. (b) Obe kópie x x̄ sú použité v návrate, takže y x̄ ∈ F. Po otočení sú prechody vrcholom x̄ tieto: medzi x a y a medzi x a z. Každý z nich obsahuje jednu kópiu x x̄ a jednu hranu z F, takže to nie sú návraty. (c) V každom inom vrchole ťah pri každom prechode použije tú istú dvojicu hrán ako predtým, iba možno v opačnom poradí. Návrat je vlastnosť tejto dvojice, preto žiadny nový nevznikne. <span class="qed">∎</span></p>
+<p>Každý návrat spotrebuje obe kópie nejakej hrany z M, takže návratov je najviac |M| = n/2. Každé otočenie odstráni práve jeden, a preto po najviac n/2 krokoch nezostane žiadny.</p></div>
+
+<div class="lemma"><p class="h">Lema 4 (striedanie)</p>
+<p>Ak ťah nemá návraty, pri každom prechode vrcholom x použije jednu kópiu x x̄ a jednu hranu z F. Ťah sa teda strieda: M, F, M, F, …</p>
+<p class="proof">Dva prechody vrcholom x rozdelia jeho štyri hrany (dve kópie x x̄ a dve hrany z F) na dve dvojice. Dvojica z oboch kópií x x̄ by bola návrat, takže každá dvojica obsahuje jednu kópiu x x̄ a jednu hranu z F. <span class="qed">∎</span></p></div>
+
+<h3>Dôkaz vety</h3>
+<p>Podľa lem 2 až 4 dostaneme eulerovský ťah, ktorý navštívi každý vrchol dvakrát a strieda hrany z M a F. Zapíšeme ho od hrany z M ako w<sub>1</sub>, …, w<sub>2n</sub>. Kroky po hranách z M sú potom presne w<sub>1</sub>w<sub>2</sub>, w<sub>3</sub>w<sub>4</sub>, …, w<sub>2n−1</sub>w<sub>2n</sub>. Overíme predpoklad lemy 1:</p>
+<ul>
+<li><b>Hrana z F</b> sa použije raz, takže pri nej niet čo overovať.</li>
+<li><b>Hrana x x̄ z M</b> sa použije v dvoch z uvedených krokov. Podľa lemy 4 sa x navštívi iba pri týchto dvoch krokoch a to isté platí pre x̄. Pri skoršom kroku sú x aj x̄ navštívené prvýkrát (h = 0, 0), pri neskoršom oba druhýkrát (h = 1, 1). Ani raz sa h nemení, takže oba prechody sa zhodujú a hrana je parallel.</li>
+</ul>
+<p>Podľa lemy 1 je (w<sub>1</sub>, h<sub>1</sub>), …, (w<sub>2n</sub>, h<sub>2n</sub>) hamiltonovská kružnica v H. <span class="qed">∎</span></p>
+
+<h3>Doplnok: regularita a obvod</h3>
+<p>Každý vrchol (v, i) má v H práve jedného suseda nad každým susedom v, takže H má rovnaké stupne ako G. Kružnica v H sa zobrazí na uzavretý sled v G, ktorý sa nikde okamžite nevracia po tej istej hrane, a každý taký sled obsahuje kružnicu nanajvýš rovnakej dĺžky. Preto obvod H je aspoň obvod G.</p>
+<p class="small">Poznámka: nie každý súvislý 2-lift je hamiltonovský. Napríklad Petersenov graf má súvislý nehamiltonovský 2-lift. Konštrukcia preto robí skutočnú prácu: vyberie jeden zo „správnych“ liftov.</p>
+
+<!-- =============================================================== -->
+<h2 id="postup">3. Krok po kroku</h2>
+<p class="small">Vstup: graph6 alebo zoznam susedov, jeden vrchol na riadok, napríklad <code>1: 2 3 4</code>. Predvolená ukážka je trojboký hranol s párovaním 1–4, 2–5, 3–6, rovnaký ako v návode na ručné kreslenie.</p>
+<textarea id="src" spellcheck="false" aria-label="Vstupný graf"></textarea>
+<p>
+<label for="ex">Ukážka:</label>
+<select id="ex">
+<option value="">(vyber)</option>
+<option value="2">Hranol (6 vrcholov, najjednoduchší)</option>
+<option value="0">Petersenov graf</option>
+<option value="3">Heawoodov graf</option>
+<option value="1">Coxeterov graf</option>
+<option value="4">Oktaéder (4-regulárny)</option>
+<option value="5">Graf so 16 vrcholmi (zoznam susedov)</option>
+</select>
+<button id="run">Spusti</button>
+</p>
+<p class="err" id="err" hidden></p>
+<p id="facts"></p>
+
+<div id="results">
+<p id="steps"></p>
+<p><button id="prev">&lt; Späť</button> <button id="next">Ďalej &gt;</button> <b id="stepTitle"></b></p>
+<svg id="figS" viewBox="0 0 640 500" role="img" aria-label="Krok konštrukcie"></svg>
+<p id="stepRangeBox" hidden><input type="range" id="stepRange" style="width:60%" aria-label="Pozícia"> <span id="stepRangeN"></span></p>
+<p id="animBox" hidden><button id="anim">Prehraj otočenie</button> <label><input type="checkbox" id="gview"> zobraz radšej v grafe</label></p>
+<div class="box"><p><b>Čo urobiť:</b> <span id="stepDo"></span></p><p><b>Skontroluj:</b> <span id="stepCheck"></span></p></div>
+<div class="wide"><table id="stepTbl"></table></div>
+
+<h3>Výsledok</h3>
+<p id="check"></p>
+<p class="small">Hamiltonovská kružnica v H nakreslená dookola, vrcholy v poradí kružnice. Čierna = krok v rámci jednej kópie, oranžová čiarkovaná = cross krok medzi kópiami, sivá = ostatné hrany H.</p>
+<svg id="figH" viewBox="0 0 640 640" role="img" aria-label="Hamiltonovská kružnica v H"></svg>
+<p>Cross hrany v G: <code id="crossList"></code></p>
+<p class="small">Výstup. Vrchol v' má index i + n, kde i je index vrcholu v (ako v <code>double_cover_from_cross_mask</code>).</p>
+<p>graph6 grafu H:</p>
+<textarea class="out" id="outG6" readonly></textarea>
+<p>Zoznam susedov grafu H:</p>
+<textarea class="out" id="outAdj" readonly style="height:140px"></textarea>
+<p>Hamiltonovská kružnica:</p>
+<textarea class="out" id="outCyc" readonly></textarea>
+</div>
+</div>
+
+<script>
+(function(){
+/* ---------- utilities ---------- */
+function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function shuffle(arr,r){for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+const key=(u,v)=>u<v?u+'-'+v:v+'-'+u;
+function parseG6(src){
+  let s=src.trim().split(/\s+/)[0]||'';
+  if(s.startsWith('>>graph6<<'))s=s.slice(10);
+  if(!s)throw new Error('Vstup je prázdny.');
+  if(s[0]===':'||s[0]==='&'||s[0]===';')throw new Error('Toto vyzerá ako sparse6 alebo digraph6. Podporovaný je iba graph6 a zoznam susedov.');
+  const b=[...s].map(c=>c.charCodeAt(0)-63);
+  if(b.some(x=>x<0||x>63))throw new Error('Toto nie je platný graph6 reťazec: graph6 používa iba znaky ? až ~.');
+  let n,pos;
+  if(b[0]<63){n=b[0];pos=1;}else if(b.length>3&&b[1]<63){n=(b[1]<<12)|(b[2]<<6)|b[3];pos=4;}else throw new Error('Graf je príliš veľký.');
+  const need=Math.ceil(n*(n-1)/12);
+  if(b.length<pos+need)throw new Error(`graph6 reťazec je príliš krátky: graf s ${n} vrcholmi potrebuje ${pos+need} znakov.`);
+  const edges=[];let k=0;
+  for(let j=1;j<n;j++)for(let i=0;i<j;i++){if((b[pos+Math.floor(k/6)]>>(5-k%6))&1)edges.push([i,j]);k++;}
+  return{n,edges,labels:[...Array(n).keys()].map(String)};
+}
+function parseAdj(text){
+  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'));
+  const ids=new Map(),order=[],E=new Set(),edges=[];
+  const id=t=>{if(!ids.has(t)){ids.set(t,order.length);order.push(t);}return ids.get(t);};
+  for(const line of lines){
+    let left,right;
+    if(line.includes(':')){[left,right]=line.split(/:(.*)/s);}else{const t=line.split(/[\s,;]+/);left=t[0];right=t.slice(1).join(' ');}
+    left=left.trim();if(!left)throw new Error(`Riadok "${line}" sa nedá prečítať.`);
+    const u=id(left);
+    for(const t of right.split(/[\s,;]+/).filter(Boolean)){const v=id(t);
+      if(u===v)throw new Error(`Vrchol ${left} je uvedený ako svoj vlastný sused. Slučky nie sú povolené.`);
+      const kk=key(u,v);if(!E.has(kk)){E.add(kk);edges.push([u,v]);}}
+  }
+  if(!order.length)throw new Error('Vstup je prázdny.');
+  const numeric=order.every(t=>/^-?\d+$/.test(t));
+  const perm=order.map((_,i)=>i);if(numeric)perm.sort((a,b)=>(+order[a])-(+order[b]));
+  const newIdx=new Array(order.length);perm.forEach((old,i)=>newIdx[old]=i);
+  return{n:order.length,edges:edges.map(([u,v])=>[newIdx[u],newIdx[v]]),labels:perm.map(i=>order[i])};
+}
+function parseInput(text){const t=text.trim();if(!t)throw new Error('Vstup je prázdny.');
+  if(/[0-9:]/.test(t)||/\n/.test(t))return parseAdj(t);return parseG6(t);}
+function toG6(n,edges){
+  const out=[];if(n<63)out.push(n);else out.push(63,(n>>12)&63,(n>>6)&63,n&63);
+  const set=new Set(edges.map(([u,v])=>key(u,v)));const bits=[];
+  for(let j=1;j<n;j++)for(let i=0;i<j;i++)bits.push(set.has(key(i,j))?1:0);
+  while(bits.length%6)bits.push(0);
+  for(let i=0;i<bits.length;i+=6){let x=0;for(let t=0;t<6;t++)x=(x<<1)|bits[i+t];out.push(x);}
+  return out.map(x=>String.fromCharCode(x+63)).join('');}
+function adjOf(n,edges){const a=[...Array(n)].map(()=>[]);edges.forEach(([u,v])=>{a[u].push(v);a[v].push(u);});return a;}
+function connected(n,edges){if(!n)return true;const a=adjOf(n,edges),seen=new Array(n).fill(false),st=[0];seen[0]=true;let c=1;
+  while(st.length){const v=st.pop();for(const w of a[v])if(!seen[w]){seen[w]=true;c++;st.push(w);}}return c===n;}
+function girth(n,edges){const a=adjOf(n,edges);let best=Infinity;
+  for(let s=0;s<n;s++){const d=new Array(n).fill(-1),par=new Array(n).fill(-1);d[s]=0;const q=[s];
+    for(let h=0;h<q.length;h++){const v=q[h];if(2*d[v]+1>=best)break;
+      for(const w of a[v]){if(d[w]<0){d[w]=d[v]+1;par[w]=v;q.push(w);}else if(par[v]!==w){best=Math.min(best,d[v]+d[w]+1);}}}}
+  return best;}
+function maxMatching(n,adj){
+  const match=new Array(n).fill(-1),p=new Array(n),base=new Array(n),used=new Array(n),blossom=new Array(n);
+  function lca(a,b){const u=new Array(n).fill(false);for(;;){a=base[a];u[a]=true;if(match[a]===-1)break;a=p[match[a]];}for(;;){b=base[b];if(u[b])return b;b=p[match[b]];}}
+  function markPath(v,b,ch){while(base[v]!==b){blossom[base[v]]=blossom[base[match[v]]]=true;p[v]=ch;ch=match[v];v=p[match[v]];}}
+  function findPath(root){used.fill(false);p.fill(-1);for(let i=0;i<n;i++)base[i]=i;used[root]=true;const q=[root];
+    for(let qh=0;qh<q.length;qh++){const v=q[qh];
+      for(const to of adj[v]){
+        if(base[v]===base[to]||match[v]===to)continue;
+        if(to===root||(match[to]!==-1&&p[match[to]]!==-1)){const cb=lca(v,to);blossom.fill(false);markPath(v,cb,to);markPath(to,cb,v);
+          for(let i=0;i<n;i++)if(blossom[base[i]]){base[i]=cb;if(!used[i]){used[i]=true;q.push(i);}}}
+        else if(p[to]===-1){p[to]=v;if(match[to]===-1)return to;used[match[to]]=true;q.push(match[to]);}}}
+    return -1;}
+  for(let v=0;v<n;v++)if(match[v]===-1){let u=findPath(v);while(u!==-1){const pv=p[u],ppv=match[pv];match[u]=pv;match[pv]=u;u=ppv;}}
+  return match;}
+function twoFactor(n,edges,r){
+  const inc=[...Array(n)].map(()=>[]);edges.forEach((e,i)=>{inc[e[0]].push(i);inc[e[1]].push(i);});
+  if(inc.some(l=>l.length<2))return null;
+  let id=0;const outer={},gad=[];
+  for(let v=0;v<n;v++)for(const e of inc[v])outer[v+':'+e]=id++;
+  const inner=[];for(let v=0;v<n;v++){const arr=[];for(let j=0;j<inc[v].length-2;j++)arr.push(id++);inner.push(arr);}
+  for(let v=0;v<n;v++)for(const t of inner[v])for(const e of inc[v])gad.push([t,outer[v+':'+e]]);
+  edges.forEach(([u,v],i)=>gad.push([outer[u+':'+i],outer[v+':'+i]]));
+  const A=adjOf(id,gad);A.forEach(l=>shuffle(l,r));
+  const mt=maxMatching(id,A);if(mt.some(x=>x===-1))return null;
+  return edges.filter(([u,v],i)=>mt[outer[u+':'+i]]===outer[v+':'+i]);}
+function springLayout(n,edges,seed){
+  const r=rng(seed||7),pos=[];for(let i=0;i<n;i++){const t=2*Math.PI*i/n;pos.push([Math.cos(t)+.01*r(),Math.sin(t)+.01*r()]);}
+  const k=Math.sqrt(4/n);let temp=.3;
+  for(let it=0;it<500;it++){const d=pos.map(()=>[0,0]);
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){let dx=pos[i][0]-pos[j][0],dy=pos[i][1]-pos[j][1],l=Math.hypot(dx,dy)||1e-3;const f=k*k/l;dx/=l;dy/=l;d[i][0]+=dx*f;d[i][1]+=dy*f;d[j][0]-=dx*f;d[j][1]-=dy*f;}
+    for(const [u,v] of edges){let dx=pos[u][0]-pos[v][0],dy=pos[u][1]-pos[v][1],l=Math.hypot(dx,dy)||1e-3;const f=l*l/k;dx/=l;dy/=l;d[u][0]-=dx*f;d[u][1]-=dy*f;d[v][0]+=dx*f;d[v][1]+=dy*f;}
+    for(let i=0;i<n;i++){const l=Math.hypot(...d[i])||1e-9,s=Math.min(l,temp)/l;pos[i][0]+=d[i][0]*s;pos[i][1]+=d[i][1]*s;}
+    temp*=.992;}
+  const xs=pos.map(p=>p[0]),ys=pos.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);const s=Math.max(x1-x0,y1-y0)||1;
+  return pos.map(([x,y])=>[(1-(x1-x0)/s)/2+(x-x0)/s,(1-(y1-y0)/s)/2+(y-y0)/s]);}
+function ring(k,cx,cy,r){const a=[];for(let i=0;i<k;i++){const t=-Math.PI/2+2*Math.PI*i/k;a.push([cx+r*Math.cos(t),cy+r*Math.sin(t)]);}return a;}
+
+/* ---------- construction ---------- */
+function construct(n,edges,opts){
+  if(n<4)return{error:'Graf musí mať aspoň 4 vrcholy.'};
+  if(n>300)return{error:`Graf má ${n} vrcholov, stránka zvládne najviac 300.`};
+  if(!connected(n,edges))return{error:'Graf nie je súvislý. Konštrukcia potrebuje súvislý graf.'};
+  const adj=adjOf(n,edges);
+  if(adj.some(l=>l.length<3))return{error:'Niektorý vrchol má stupeň menší ako 3. Každý vrchol potrebuje dve hrany z F a jednu hranu z M.'};
+  let M=null,F=null,mate=null,why='';
+  if(opts&&opts.M){const Mk0=new Set(opts.M.map(([u,v])=>key(u,v)));const mt=new Array(n).fill(-1);let ok=opts.M.every(([u,v])=>edges.some(([a,b])=>key(a,b)===key(u,v)));
+    opts.M.forEach(([u,v])=>{if(mt[u]!==-1||mt[v]!==-1)ok=false;mt[u]=v;mt[v]=u;});
+    const rest=edges.filter(([u,v])=>!Mk0.has(key(u,v)));const dg=new Array(n).fill(0);rest.forEach(([u,v])=>{dg[u]++;dg[v]++;});
+    if(ok&&mt.every(x=>x!==-1)&&dg.every(d=>d===2)&&connected(n,edges)){M=opts.M.map(([u,v])=>[u,v]);F=rest;mate=mt;}}
+  for(let att=0;att<40&&!F;att++){
+    const r=rng(1000+att),A=adj.map(l=>att?shuffle(l.slice(),r):l.slice());
+    const mt=maxMatching(n,A);
+    if(mt.some(x=>x===-1))return{error:'Graf nemá perfektné párovanie, takže konštrukcia sa nedá použiť. (Kubický graf bez perfektného párovania má most.)'};
+    const Me=[],Mk=new Set();for(let v=0;v<n;v++)if(mt[v]>v){Me.push([v,mt[v]]);Mk.add(key(v,mt[v]));}
+    const rest=edges.filter(([u,v])=>!Mk.has(key(u,v)));const deg=new Array(n).fill(0);rest.forEach(([u,v])=>{deg[u]++;deg[v]++;});
+    const Fe=deg.every(d=>d===2)?rest:twoFactor(n,rest,r);
+    if(!Fe){why=' V G − M sa nenašiel 2-faktor.';continue;}
+    if(!connected(n,[...Fe,...Me])){why=' F ∪ M nebol súvislý.';continue;}
+    M=Me;F=Fe;mate=mt;}
+  if(!F)return{error:'Ani po 40 pokusoch sa nenašlo perfektné párovanie M a disjunktný 2-faktor F so súvislým F ∪ M.'+why};
+  const Fk=new Set(F.map(([u,v])=>key(u,v))),Mk=new Set(M.map(([u,v])=>key(u,v)));
+  const other=edges.filter(([u,v])=>!Fk.has(key(u,v))&&!Mk.has(key(u,v)));
+  const ME=[...F,...M,...M];const A=[...Array(n)].map(()=>[]);ME.forEach(([u,v],i)=>{A[u].push([i,v]);A[v].push([i,u]);});
+  const usedE=new Array(ME.length).fill(false),ptr=new Array(n).fill(0),path=[0],circ=[];
+  while(path.length){const v=path[path.length-1];while(ptr[v]<A[v].length&&usedE[A[v][ptr[v]][0]])ptr[v]++;
+    if(ptr[v]<A[v].length){const [e,w]=A[v][ptr[v]];usedE[e]=true;path.push(w);}else circ.push(path.pop());}
+  circ.reverse();circ.pop();
+  if(opts&&opts.tour&&opts.tour.length===circ.length){const t=opts.tour,cnt={};let ok=true;
+    for(let i=0;i<t.length;i++){const k2=key(t[i],t[(i+1)%t.length]);cnt[k2]=(cnt[k2]||0)+1;}
+    const want={};F.forEach(([u,v])=>want[key(u,v)]=1);M.forEach(([u,v])=>want[key(u,v)]=2);
+    for(const k2 in cnt)if(want[k2]!==cnt[k2])ok=false;for(const k2 in want)if(cnt[k2]!==want[k2])ok=false;
+    if(ok)circ.splice(0,circ.length,...t);}
+  const tour0=circ.slice();let tour=circ.slice();const L=tour.length;
+  const backs=t=>{const r=[];for(let i=0;i<L;i++)if(t[(i+1)%L]===mate[t[i]]&&t[(i+2)%L]===t[i])r.push(i);return r;};
+  const backs0=backs(tour0),fixes=[];let guard=0;
+  for(;;){const b=backs(tour);if(!b.length||guard++>10*n)break;const i=b[0];
+    const rot=tour.slice(i).concat(tour.slice(0,i));const xb=rot[1];let q=-1;for(let j=2;j<L;j++)if(rot[j]===xb){q=j;break;}
+    const y0=rot[q-1],z0=rot[q+1],lenA=q-2,lenB=L-q;let fx;
+    if(lenB<lenA){const bef=rot.slice(q-1).concat(rot.slice(0,q-1)),i0=L-q+1;
+      const nt=bef.slice(0,2).concat(bef.slice(2,i0+1).reverse(),bef.slice(i0+1));
+      fx={before:bef,after:nt,a:2,b:i0,x:rot[0],xb,y:y0,z:z0,retAt:'end'};tour=nt;}
+    else{const nt=rot.slice(0,2).concat(rot.slice(2,q).reverse(),rot.slice(q));
+      fx={before:rot,after:nt,a:2,b:q-1,x:rot[0],xb,y:y0,z:z0,retAt:'start'};tour=nt;}
+    fixes.push(fx);}
+  let fin=tour.slice();if(mate[fin[0]]!==fin[1])fin=fin.slice(1).concat(fin.slice(0,1));
+  const seen=new Set(),h=fin.map(v=>{const r=seen.has(v)?1:0;seen.add(v);return r;});
+  const s={};edges.forEach(([u,v])=>s[key(u,v)]=0);let conflict=false;const setE={};
+  for(let k=0;k<L;k++){const e=key(fin[k],fin[(k+1)%L]),val=h[k]!==h[(k+1)%L]?1:0;if(e in setE&&setE[e]!==val)conflict=true;setE[e]=val;s[e]=val;}
+  const cyc=fin.map((v,k)=>[v,h[k]]);
+  const liftE=[];edges.forEach(([u,v])=>{if(s[key(u,v)])liftE.push([u,v+n],[u+n,v]);else liftE.push([u,v],[u+n,v+n]);});
+  const LE=new Set(liftE.map(([a,b])=>key(a,b)));const ids=new Set(cyc.map(([v,x])=>v+x*n));
+  let ham=!conflict&&ids.size===2*n;for(let k=0;k<L&&ham;k++){const a=cyc[k],b=cyc[(k+1)%L];if(!LE.has(key(a[0]+a[1]*n,b[0]+b[1]*n)))ham=false;}
+  return{n,edges,M,F,other,mate,tour0,backs0,fixes,fin,h,s,cyc,liftE,ham,gG:girth(n,edges),gH:girth(2*n,liftE),deg:[...new Set(adj.map(l=>l.length))].sort((a,b)=>a-b)};
+}
+
+/* ---------- examples ---------- */
+function ringPos(k,r){return ring(k,.5,.5,r);}
+const EX=[
+  {src:'IheA@GUAo',pos:[...ring(5,.5,.52,.48),...ring(5,.5,.52,.22)]},
+  {src:'[sGGQ?@?OH?@C???_COC@??C?OH??G?ID????_?G?G@??GA?C?@??AAA???GG??D'},
+  {src:'1: 2 3 4\n2: 1 3 5\n3: 1 2 6\n4: 1 5 6\n5: 2 4 6\n6: 3 4 5',pos:[[.5,.02],[.02,.9],[.98,.9],[.5,.42],[.3,.72],[.7,.72]],M:[['1','4'],['2','5'],['3','6']],tour:['1','4','1','2','5','4','6','3','2','5','6','3']},
+  {src:'MhEGHC@AI?_PC@_G_',pos:ringPos(14,.49)},
+  {src:'E}lw',pos:[[.5,.02],[.02,.9],[.98,.9],[.36,.46],[.64,.46],[.5,.72]]},
+  {src:'1: 2 3 4\n2: 1 11 14\n3: 1 12 16\n4: 1 13 15\n5: 8 9 10\n6: 7 9 10\n7: 6 8 12\n8: 5 7 13\n9: 5 6 11\n10: 5 6 11\n11: 2 9 10\n12: 3 7 15\n13: 4 8 16\n14: 2 15 16\n15: 4 12 14\n16: 3 13 14'}
+];
+const $=id=>document.getElementById(id);
+let R=null,G=null,POS=null;
+const lab=v=>G.labels[v];
+const labL=(v,f)=>lab(v)+(f?"'":'');
+function line(a,b,c,w,d){return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?' stroke-dasharray="5 4"':''}/>`;}
+function node(p,t,r,fs){return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r}" fill="#fff" stroke="#000" stroke-width="1"/>`+(fs?`<text x="${p[0].toFixed(1)}" y="${(p[1]+fs*.36).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="${fs}" fill="#000">${t}</text>`:'');}
+function tbl(rows){return rows.map(r=>`<tr><th>${r[0]}</th>${r.slice(1).join('')}</tr>`).join('');}
+function drawH(){
+  const n=R.n,N=2*n,P=ring(N,320,320,270),pos={};R.cyc.forEach(([v,f],i)=>pos[v+f*n]=P[i]);
+  const on=new Set();for(let i=0;i<N;i++){const a=R.cyc[i][0]+R.cyc[i][1]*n,b=R.cyc[(i+1)%N][0]+R.cyc[(i+1)%N][1]*n;on.add(key(a,b));}
+  let o='';R.liftE.forEach(([a,b])=>{if(!on.has(key(a,b)))o+=line(pos[a],pos[b],'#c8c8c8',.8);});
+  for(let i=0;i<N;i++){const [v1,f1]=R.cyc[i],[v2,f2]=R.cyc[(i+1)%N];o+=f1!==f2?line(pos[v1+f1*n],pos[v2+f2*n],'#e07b00',2.5,1):line(pos[v1+f1*n],pos[v2+f2*n],'#000',2);}
+  const r=N<=24?13:N<=60?9:N<=140?5:3,fs=N<=24?11:N<=60?9:0;
+  R.cyc.forEach(([v,f],i)=>{const p=P[i];o+=node(p,labL(v,f),r,fs);
+    if(!fs&&N<=200){const a=-Math.PI/2+2*Math.PI*i/N;o+=`<text x="${(320+292*Math.cos(a)).toFixed(1)}" y="${(323+292*Math.sin(a)).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="8">${labL(v,f)}</text>`;}});
+  $('figH').innerHTML=o;
+}
+function fCycles(){const A=adjOf(R.n,R.F),seen=new Array(R.n).fill(false),out=[];
+  for(let s=0;s<R.n;s++){if(seen[s])continue;const c=[s];seen[s]=true;let prev=-1,cur=s;
+    for(;;){const nx=A[cur].find(w=>w!==prev&&!seen[w]);if(nx==null)break;c.push(nx);seen[nx]=true;prev=cur;cur=nx;}out.push(c);}
+  return out;}
+
+/* ---------- drawing helpers ---------- */
+const C={m:'#c00',f:'#0a5bc4',o:'#aaa',x:'#e07b00',l0:'#1f8a3b',l1:'#7b3fb0',hl:'#e0b400',bad:'#c00'};
+function XS(v){return[40+POS[v][0]*560,30+POS[v][1]*440];}
+function offL(a,b,d){const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return[[a[0]-dy/l*d,a[1]+dx/l*d],[b[0]-dy/l*d,b[1]+dx/l*d]];}
+function lineO(a,b,c,w,d,op){return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?' stroke-dasharray="5 4"':''}${op!=null?` opacity="${op}"`:''}/>`;}
+function vSize(){const n=R.n;return n<=12?[14,12]:n<=30?[11,12]:n<=80?[7,9]:[4,0];}
+function vertsS(ring){const [r,fs]=vSize();let o='';for(let v=0;v<R.n;v++){if(ring&&ring.has(v))o+=`<circle cx="${XS(v)[0]}" cy="${XS(v)[1]}" r="${r+6}" fill="none" stroke="${C.x}" stroke-width="2.5"/>`;o+=node(XS(v),lab(v),r,fs);}return o;}
+function baseS(mode,op){let o='';
+  R.other.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.o,1,1,op));
+  R.F.forEach(([u,v])=>o+=lineO(XS(u),XS(v),mode==='plain'?'#666':C.f,mode==='plain'?1.5:2,0,op));
+  R.M.forEach(([u,v])=>{if(mode==='plain')o+=lineO(XS(u),XS(v),'#666',1.5,0,op);
+    else if(mode==='double'){const [a,b]=offL(XS(u),XS(v),4),[c,d]=offL(XS(u),XS(v),-4);o+=lineO(a,b,C.m,2.5,0,op)+lineO(c,d,C.m,2.5,0,op);}
+    else o+=lineO(XS(u),XS(v),C.m,4,0,op);});
+  return o;}
+function tourS(t,upto,col,ring){const Ln=t.length;let o=baseS('double',.2);const cnt={};
+  for(let k=0;k<upto;k++){const u=t[k],v=t[(k+1)%Ln],c=col(k);
+    if(R.mate[u]===v){const kk=key(u,v);cnt[kk]=(cnt[kk]||0)+1;const a=XS(Math.min(u,v)),b=XS(Math.max(u,v));const [p,q]=offL(a,b,cnt[kk]===1?4:-4);o+=lineO(p,q,c,3);}
+    else o+=lineO(XS(u),XS(v),c,2.5);}
+  return o+vertsS(ring);}
+function liftCopies(upto){const n=R.n,N=2*n,P={};
+  for(let v=0;v<n;v++){const [x,y]=POS[v];P[v]=[25+x*270,70+y*370];P[v+n]=[345+x*270,70+y*370];}
+  const on=new Map();for(let i=0;i<N;i++){const a=R.cyc[i][0]+R.cyc[i][1]*n,b=R.cyc[(i+1)%N][0]+R.cyc[(i+1)%N][1]*n;on.set(key(a,b),i);}
+  let o=`<text x="160" y="35" text-anchor="middle" font-family="Arial" font-size="14">kópia 0 (v)</text><text x="480" y="35" text-anchor="middle" font-family="Arial" font-size="14">kópia 1 (v')</text>`;
+  R.liftE.forEach(([a,b])=>{const i=on.get(key(a,b));if(!(i!=null&&i<upto))o+=lineO(P[a],P[b],'#d0d0d0',1);});
+  for(let i=0;i<upto;i++){const a=R.cyc[i][0]+R.cyc[i][1]*n,b=R.cyc[(i+1)%N][0]+R.cyc[(i+1)%N][1]*n;const cr=R.cyc[i][1]!==R.cyc[(i+1)%N][1];o+=lineO(P[a],P[b],cr?C.x:'#000',cr?2.5:2,cr);}
+  const r=n<=12?11:n<=30?8:n<=80?5:3,fs=n<=12?10:n<=30?8:0;
+  for(let i=0;i<N;i++){const v=i%n,f=i>=n?1:0;o+=node(P[i],labL(v,f),r,fs);}
+  if(upto>0&&upto<N){const p=P[R.cyc[upto%N][0]+R.cyc[upto%N][1]*n];o+=`<circle cx="${p[0]}" cy="${p[1]}" r="${r+5}" fill="none" stroke="${C.x}" stroke-width="2.5"/>`;}
+  return o;}
+const ARC={red:'#c00',orange:'#e07b00',blue:'#0a5bc4',green:'#1f8a3b'};
+function fixEdges(f,phase){const b=f.b;if(phase)return{green:[0,1,b,b+1],red:[],blue:[]};
+  return f.retAt==='start'?{red:[0,1],blue:[b,b+1],green:[]}:{red:[b,b+1],blue:[0,1],green:[]};}
+function fixCls(f,k,phase){if(k>=f.a&&k<=f.b)return 'y';const E=fixEdges(f,phase);
+  const vs=c=>new Set(E[c].flatMap(i=>[i,i+1]));if(vs('red').has(k))return 'r';if(vs('blue').has(k))return 'b';if(vs('green').has(k))return 'g';return '';}
+function arrowEdge(u,v,col,offSign,num){const r=vSize()[0];const A=XS(u),B=XS(v);
+  const P=XS(Math.min(u,v)),Q=XS(Math.max(u,v));const dx=Q[0]-P[0],dy=Q[1]-P[1],l=Math.hypot(dx,dy)||1;const ox=-dy/l*4.5*offSign,oy=dx/l*4.5*offSign;
+  const ux=(B[0]-A[0])/l,uy=(B[1]-A[1])/l,sh=r+3;
+  const a=[A[0]+ox+ux*sh,A[1]+oy+uy*sh],b=[B[0]+ox-ux*sh,B[1]+oy-uy*sh];
+  const nx=-uy,ny=ux,base=[b[0]-ux*10,b[1]-uy*10];
+  let o=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${base[0].toFixed(1)}" y2="${base[1].toFixed(1)}" stroke="${ARC[col]}" stroke-width="3.2"/>`;
+  o+=`<polygon points="${b[0].toFixed(1)},${b[1].toFixed(1)} ${(base[0]+nx*5).toFixed(1)},${(base[1]+ny*5).toFixed(1)} ${(base[0]-nx*5).toFixed(1)},${(base[1]-ny*5).toFixed(1)}" fill="${ARC[col]}"/>`;
+  if(num!=null){const mx=(a[0]+b[0])/2+nx*11*(offSign||1),my=(a[1]+b[1])/2+ny*11*(offSign||1);
+    o+=`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="8" fill="#fff" stroke="${ARC[col]}" stroke-width="1.2"/><text x="${mx.toFixed(1)}" y="${(my+3.5).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="10" fill="${ARC[col]}">${num}</text>`;}
+  return o;}
+function tagV(v,text,col,bar){const r=vSize()[0];const p=XS(v);const x=p[0]+r+5,y=p[1]-r-3;return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-family="Arial" font-size="15" font-weight="bold" fill="${ARC[col]}">${text}</text>`+(bar?`<line x1="${x.toFixed(1)}" y1="${(y-13).toFixed(1)}" x2="${(x+8).toFixed(1)}" y2="${(y-13).toFixed(1)}" stroke="${ARC[col]}" stroke-width="1.8"/>`:'');}
+function ringV(v,col){const r=vSize()[0];const p=XS(v);return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r+5}" fill="none" stroke="${ARC[col]}" stroke-width="2.5"/>`;}
+function fixPic(f,phase){
+  const t=phase?f.after:f.before,L=t.length;const cnt={};
+  let o=baseS('double',.15);
+  const seg=(k,col,num)=>{const u=t[k%L],v=t[(k+1)%L];let sg=0;if(R.mate[u]===v){const kk=key(u,v);cnt[kk]=(cnt[kk]||0)+1;sg=cnt[kk]===1?1:-1;}o+=arrowEdge(u,v,col,sg,num);};
+  const E=fixEdges(f,phase);
+  for(const c of ['red','blue','green'])for(const k of E[c])seg(k,c);
+  for(let k=f.a,i=1;k<f.b;k++,i++)seg(k,'orange',i);
+  o+=vertsS();
+  o+=ringV(f.xb,'orange')+ringV(f.x,phase?'green':'red');
+  o+=tagV(f.x,'x',phase?'green':'red')+tagV(f.xb,'x','orange',1);
+  if(f.y!==f.x&&f.y!==f.xb)o+=tagV(f.y,'y','blue');
+  if(f.z!==f.x&&f.z!==f.xb&&f.z!==f.y)o+=tagV(f.z,'z','blue');
+  return o;}
+let GVIEW=false,ANIM=null;
+const FILL={y:'#ffe680'};
+function clsCol(c){return c==='r'?'#c00':c==='b'?'#0a5bc4':c==='g'?'#1f8a3b':'#555';}
+function ringPic(f,phase,tt){
+  const L=f.before.length,cx=195,cy=255,R0=172,a=f.a,b=f.b;
+  const ang=i=>-Math.PI/2+2*Math.PI*i/L;
+  const at=(i,rad)=>[cx+rad*Math.cos(ang(i)),cy+rad*Math.sin(ang(i))];
+  const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  const e=ease(tt);
+  // position of the bead that sits in slot s of the current sequence
+  const span=Math.max(1,b-a);
+  const pos=s=>{if(phase&&s>=a&&s<=b){const i=a+b-s,th=ang(i)+(ang(s)-ang(i))*e,depth=0.15+0.55*(i-a)/span,rad=R0*(1-depth*Math.sin(Math.PI*e));return[cx+rad*Math.cos(th),cy+rad*Math.sin(th)];}return at(s,R0);};
+  const seq=phase?f.after:f.before;
+  const br=L<=24?13:L<=40?10:L<=70?7:4,fs=br>=10?(br>=13?11:9):0;
+  let o=`<circle cx="${cx}" cy="${cy}" r="${R0}" fill="none" stroke="#eee" stroke-width="1"/>`;
+  const E=fixEdges(f,phase),edgeCol={};for(const c of ['red','blue','green'])for(const k of E[c])edgeCol[k]=ARC[c];
+  for(let k=0;k<L;k++){const p=pos(k),q=pos((k+1)%L);const inSeg=k>=a&&k<b;const col=edgeCol[k]||(inSeg?'#e0b400':'#9a9a9a');
+    o+=`<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}" stroke="${col}" stroke-width="${edgeCol[k]||inSeg?3:1.5}"/>`;}
+  if(!phase){for(const k of [a-1,b]){const th=(ang(k)+ang(k+1))/2;const p1=[cx+(R0-16)*Math.cos(th),cy+(R0-16)*Math.sin(th)],p2=[cx+(R0+16)*Math.cos(th),cy+(R0+16)*Math.sin(th)];
+    o+=`<line x1="${p1[0].toFixed(1)}" y1="${p1[1].toFixed(1)}" x2="${p2[0].toFixed(1)}" y2="${p2[1].toFixed(1)}" stroke="#000" stroke-width="3"/>`;}}
+  for(let k=0;k<L;k++){const p=pos(k),v=seq[k],c=fixCls(f,k,phase);
+    if(v===f.xb)o+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${br+5}" fill="none" stroke="${ARC.orange}" stroke-width="2.5"/>`;
+    o+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${br}" fill="${c==='y'?FILL.y:'#fff'}" stroke="${clsCol(c)}" stroke-width="${c&&c!=='y'?2.2:1}"/>`;
+    if(fs)o+=`<text x="${p[0].toFixed(1)}" y="${(p[1]+fs*.36).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="${fs}">${lab(v)}</text>`;}
+  o+=`<text x="${cx}" y="28" text-anchor="middle" font-family="Arial" font-size="13" fill="#444">ťah ako náhrdelník</text>`;
+  return o;}
+function localPic(f,phase){
+  const C0=[535,255],X=[445,255],Y=[615,160],Z=[615,350];
+  const ptOn=(A,B,d)=>{const dx=B[0]-A[0],dy=B[1]-A[1],l=Math.hypot(dx,dy);return[A[0]+dx/l*d,A[1]+dy/l*d];};
+  let o=`<line x1="398" y1="40" x2="398" y2="470" stroke="#ddd"/><text x="520" y="28" text-anchor="middle" font-family="Arial" font-size="13" fill="#444">pri vrchole x̄ = ${lab(f.xb)}</text>`;
+  const Xu=[X[0],X[1]-11],Xl=[X[0],X[1]+11],Cu=[C0[0],C0[1]-11],Cl=[C0[0],C0[1]+11];
+  o+=`<line x1="${Cu[0]}" y1="${Cu[1]}" x2="${Xu[0]}" y2="${Xu[1]}" stroke="#c00" stroke-width="2.5"/><line x1="${Cl[0]}" y1="${Cl[1]}" x2="${Xl[0]}" y2="${Xl[1]}" stroke="#c00" stroke-width="2.5"/>`;
+  o+=`<line x1="${C0[0]}" y1="${C0[1]}" x2="${Y[0]}" y2="${Y[1]}" stroke="#0a5bc4" stroke-width="2"/><line x1="${C0[0]}" y1="${C0[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#0a5bc4" stroke-width="2"/>`;
+  const Mu=ptOn(Cu,Xu,62),Ml=ptOn(Cl,Xl,62),Py=ptOn(C0,Y,78),Pz=ptOn(C0,Z,78);
+  const pas=(A,B,col,dash,lbl,lp)=>`<path d="M${A[0].toFixed(1)},${A[1].toFixed(1)} Q${C0[0]},${C0[1]} ${B[0].toFixed(1)},${B[1].toFixed(1)}" fill="none" stroke="${col}" stroke-width="7" stroke-opacity=".45" stroke-linecap="round"${dash?' stroke-dasharray="2 9"':''}/>`+(lbl?`<text x="${lp[0]}" y="${lp[1]}" text-anchor="middle" font-family="Arial" font-size="12" fill="${col}">${lbl}</text>`:'');
+  if(!phase){o+=pas(Mu,Ml,'#c00',0,'prechod 1: návrat',[478,218])+pas(Py,Pz,'#0a5bc4',0,'prechod 2',[600,259]);}
+  else{o+=pas(Mu,Py,'#1f8a3b',0,'prechod 1',[520,180])+pas(Ml,Pz,'#1f8a3b',0,'prechod 2',[520,340]);}
+  o+=node(C0,lab(f.xb),15,12)+`<circle cx="${C0[0]}" cy="${C0[1]}" r="20" fill="none" stroke="${ARC.orange}" stroke-width="2.5"/>`;
+  o+=node(X,lab(f.x),15,12)+node(Y,lab(f.y),15,12)+node(Z,lab(f.z),15,12);
+  o+=`<text x="450" y="292" text-anchor="middle" font-family="Arial" font-size="11" fill="#c00">x: hrana z M,</text><text x="450" y="305" text-anchor="middle" font-family="Arial" font-size="11" fill="#c00">2 kópie</text>`;
+  o+=`<text x="605" y="135" text-anchor="middle" font-family="Arial" font-size="11" fill="#0a5bc4">y (hrana z F)</text><text x="605" y="383" text-anchor="middle" font-family="Arial" font-size="11" fill="#0a5bc4">z (hrana z F)</text>`;
+  return o;}
+function fixView(f,phase,tt){return GVIEW?fixPic(f,phase):ringPic(f,phase,tt)+localPic(f,phase);}
+function rowT(name,t,cls){return `<tr><th>${name}</th>${t.map((v,k)=>`<td class="${cls?cls(k):''}">${v}</td>`).join('')}</tr>`;}
+
+function liftEdgesPic(){const n=R.n,P={};
+  for(let v=0;v<n;v++){const [x,y]=POS[v];P[v]=[25+x*270,70+y*370];P[v+n]=[345+x*270,70+y*370];}
+  let o=`<text x="160" y="35" text-anchor="middle" font-family="Arial" font-size="14">kópia 0 (v)</text><text x="480" y="35" text-anchor="middle" font-family="Arial" font-size="14">kópia 1 (v')</text>`;
+  R.liftE.forEach(([a,b])=>{const cr=(a<n)!==(b<n);o+=lineO(P[a],P[b],cr?C.x:'#000',cr?2:1.5,cr);});
+  const r=n<=12?11:n<=30?8:n<=80?5:3,fs=n<=12?10:n<=30?8:0;
+  for(let i=0;i<2*n;i++){const v=i%n,f=i>=n?1:0;o+=node(P[i],labL(v,f),r,fs);}
+  return o;}
+function graphCross(){let o='';R.other.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.o,1,1));
+  R.F.forEach(([u,v])=>o+=R.s[key(u,v)]?lineO(XS(u),XS(v),C.x,3,1):lineO(XS(u),XS(v),C.f,2));
+  R.M.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.m,4));return o+vertsS();}
+function graphM(){let o='';R.other.forEach(([u,v])=>o+=lineO(XS(u),XS(v),'#bbb',1.2));R.F.forEach(([u,v])=>o+=lineO(XS(u),XS(v),'#bbb',1.2));
+  R.M.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.m,4));return o+vertsS();}
+
+/* ---------- the steps ---------- */
+const GROUPS=['Nakresli G','Párovanie M','2-faktor F','Zdvoj M','Eulerovský ťah','Nájdi návraty','Oprav návraty','Očísluj návštevy','Cross hrany','Nakresli lift','Hamiltonovská kružnica'];
+let FR=[],cur=0,sub=null;
+function buildFrames(){
+  const n=R.n,m=R.edges.length,t0=R.tour0,Ln=t0.length,W=R.fin,LW=W.length,k3=R.deg.length===1&&R.deg[0]===3;
+  const E=(u,v)=>lab(u)+'-'+lab(v);
+  FR=[];
+  FR.push({g:0,t:'Nakresli graf G',d:()=>baseS('plain')+vertsS(),
+    do:'Nakresli vstupný graf G.',ck:`Každý vrchol má stupeň ${R.deg.join(' alebo ')}. G má ${n} vrcholov a ${m} hrán.`});
+  FR.push({g:1,t:'Vyber perfektné párovanie M (červenou)',d:()=>graphM(),
+    do:'Vyfarbi niektoré hrany červenou tak, aby sa každého vrcholu dotýkala práve jedna červená hrana. To je perfektné párovanie M. (Ak sa zasekneš, nájdi striedavú cestu medzi dvoma voľnými vrcholmi a prehoď na nej farby.)',
+    ck:`${R.M.length} červené hrany: ${R.M.map(([u,v])=>E(u,v)).join(', ')}. Každého vrcholu sa dotýka práve jedna.`});
+  const cyc=fCycles();
+  FR.push({g:2,t:'2-faktor F (modrou)',d:()=>baseS('mf')+vertsS(),
+    do:k3?'Všetky zvyšné hrany vyfarbi modrou. To je 2-faktor F.':'Spomedzi zvyšných hrán vyber modré tak, aby sa každého vrcholu dotýkali práve dve. To je 2-faktor F. Sivé čiarkované hrany sa nepoužijú a budú parallel.',
+    ck:`Pri každom vrchole sú 2 modré hrany. Modré hrany tvoria ${cyc.length===1?'1 kružnicu':cyc.length+(cyc.length<5?' kružnice':' kružníc')}: ${cyc.map(c=>c.map(lab).join('-')).join(',  ')}.`});
+  FR.push({g:3,t:'Nakresli každú červenú hranu dvakrát',d:()=>baseS('double')+vertsS(),
+    do:'Ku každej červenej hrane nakresli druhú červenú čiaru tesne vedľa.',ck:'Z každého vrcholu teraz vychádzajú 4 čiary: 2 modré a 2 červené. Všetky stupne sú párne, takže existuje eulerovský ťah.'});
+  FR.push({g:4,t:'Prejdi eulerovský ťah',range:Ln,d:k=>tourS(t0,k,()=>'#000',k<Ln?new Set([t0[k%Ln]]):null),
+    do:'Začni kdekoľvek a choď po čiarach tak, aby si každú použil práve raz, až kým sa nevrátiš na začiatok. Každú použitú čiaru preškrtni a vrcholy, cez ktoré prechádzaš, píš do zoznamu. Jazdcom môžeš ťah prechádzať krok po kroku.',
+    ck:k=>`Prejdených ${k} z ${Ln} krokov. Na konci má zoznam ${Ln} položiek a každý vrchol je v ňom práve dvakrát.`,
+    tb:k=>rowT('krok',t0.map((_,i)=>i+1),i=>i===k-1?'y':'')+rowT('vrchol',t0.map(lab))});
+  const bad=new Set();R.backs0.forEach(i=>{bad.add(i);bad.add((i+1)%Ln);bad.add((i+2)%Ln);});
+  const badV=new Set(R.backs0.map(i=>t0[(i+1)%Ln]));
+  FR.push({g:5,t:'Nájdi návraty',d:()=>tourS(t0,Ln,k=>{const u=t0[k],v=t0[(k+1)%Ln];return R.backs0.some(i=>(i===k||(i+1)%Ln===k))&&R.mate[u]===v?C.bad:'#bbb';},badV),
+    do:'Hľadaj v zozname tri položky a, b, a, kde a-b je červená hrana (pozri aj cez koniec zoznamu na začiatok). Tam ide ťah po červenej hrane a hneď späť po jej druhej kópii. Taký návrat nesmie zostať, lebo tá hrana by musela byť zároveň parallel aj cross.',
+    ck:R.backs0.length?`Počet návratov: ${R.backs0.length} (červené): ${R.backs0.map(i=>`${lab(t0[i])}, ${lab(t0[(i+1)%Ln])}, ${lab(t0[(i+2)%Ln])}`).join(';  ')}.`:'Žiadne návraty. Krok 7 netreba robiť.',
+    tb:()=>rowT('vrchol',t0.map(lab),k=>bad.has(k)?'r':'')});
+  if(!R.fixes.length)FR.push({g:6,t:'Oprav návraty',d:()=>tourS(t0,Ln,()=>'#000'),do:'Nie je čo opravovať, ťah nemá návraty.',ck:'Zoznam zostáva rovnaký.',tb:()=>rowT('vrchol',t0.map(lab))});
+  R.fixes.forEach((f,i)=>{
+    const X=lab(f.x),XB=lab(f.xb),Y=lab(f.y),Z=lab(f.z);
+    FR.push({g:6,t:`Oprava ${i+1} z ${R.fixes.length}: návrat ${X}, ${XB}, ${X}`,fix:f,phase:0,d:()=>fixView(f,0,1),
+      do:`Nájdi druhé miesto, kde je v zozname ${XB} (${Y}, ${XB}, ${Z}). Prestrihni zoznam pri oboch výskytoch ${XB} a žltú časť medzi nimi napíš odzadu.`,
+      ck:`Vľavo je zoznam nakreslený ako náhrdelník: oranžové krúžky sú dva výskyty ${XB}, červená je návrat a čierne čiarky ukazujú, kde strihať. Vpravo: pri vrchole ${XB} jeden prechod používa obe kópie červenej hrany.`,
+      tb:()=>rowT('zoznam',f.before.map(lab),k=>fixCls(f,k,0))});
+    FR.push({g:6,t:`Oprava ${i+1} z ${R.fixes.length}: po otočení`,fix:f,phase:1,d:()=>fixView(f,1,1),
+      do:'Stlač „Prehraj otočenie“ a uvidíš, ako sa žltý kúsok otočí.',
+      ck:`Okolo ${XB} teraz ťah ide ${X} - ${XB} - ${Y} a ${X} - ${XB} - ${Z}: každý prechod používa jednu červenú a jednu modrú hranu, takže návrat zmizol. Zoznam používa presne tie isté hrany ako predtým.`,
+      tb:()=>rowT('pred',f.before.map(lab),k=>fixCls(f,k,0))+rowT('po',f.after.map(lab),k=>fixCls(f,k,1))});
+  });
+  const edgeKind=k=>R.mate[W[k]]===W[(k+1)%LW]?'červená':'modrá';
+  FR.push({g:7,t:'Očísluj návštevy',d:()=>tourS(W,LW,k=>R.mate[W[k]]===W[(k+1)%LW]?(R.h[k]?C.l1:C.l0):'#bbb'),
+    do:'Zoznam čítaj od červenej hrany. Pod každý vrchol napíš 0, ak ho vidíš prvýkrát, a 1, ak ho vidíš druhýkrát.',
+    ck:'Pod každou červenou hranou v zozname je 0 0 alebo 1 1, nikdy 0 1. Na obrázku je červená hrana zelená, keď sa prechádza s 0 0, a fialová, keď s 1 1.',
+    tb:()=>rowT('k',W.map((_,i)=>i+1))+rowT('vrchol',W.map(lab))+rowT('číslo',R.h,k=>R.h[k]?'b':'')+rowT('hrana ďalej',W.map((_,k)=>edgeKind(k)),k=>edgeKind(k)==='červená'?'r':'')});
+  const cr=R.edges.filter(([u,v])=>R.s[key(u,v)]).map(([u,v])=>E(u,v));
+  FR.push({g:8,t:'Nájdi cross hrany',d:()=>graphCross(),
+    do:'Prejdi zoznam. Medzi dvoma susednými vrcholmi (aj medzi posledným a prvým) pozri na čísla. Ak sa číslo zmení (z 0 na 1 alebo z 1 na 0), hrana je cross. Všetky ostatné hrany sú parallel.',
+    ck:`Cross hrany (oranžové čiarkované): ${cr.join(', ')||'žiadne'}. Červené hrany číslo nikdy nemenia, takže sú vždy parallel.`,
+    tb:()=>rowT('krok',W.map((v,k)=>`${lab(v)}→${lab(W[(k+1)%LW])}`))+rowT('čísla',W.map((v,k)=>`${R.h[k]}→${R.h[(k+1)%LW]}`))+rowT('cross?',W.map((v,k)=>R.h[k]!==R.h[(k+1)%LW]?'áno':''),k=>R.h[k]!==R.h[(k+1)%LW]?'c':'')});
+  FR.push({g:9,t:'Nakresli lift H',d:()=>liftEdgesPic(),
+    do:"Nakresli G dvakrát: kópiu 0 s vrcholmi v a kópiu 1 s vrcholmi v'. Parallel hranu uv nakresli v oboch kópiách (u-v a u'-v'). Cross hranu uv nakresli medzi kópiami (u-v' a u'-v).",
+    ck:`H má ${2*n} vrcholov a ${2*m} hrán a každý vrchol H má stupeň ${R.deg.join(' alebo ')}.`});
+  FR.push({g:10,t:'Nakresli hamiltonovskú kružnicu',range:2*n,d:k=>liftCopies(k),
+    do:"Choď podľa zoznamu z kroku 8. Vrchol s číslom 0 ber z kópie 0, vrchol s číslom 1 z kópie 1 (s čiarkou). Jazdcom môžeš kružnicu kresliť krok po kroku.",
+    ck:k=>`Nakreslených ${k} z ${2*n} krokov. Na konci kružnica prejde všetkými ${2*n} vrcholmi H, každým raz, a každý krok ide po hrane H. Je to hamiltonovská kružnica.`,
+    tb:()=>rowT('kružnica',R.cyc.map(([v,f])=>labL(v,f)))});
+}
+function showFrame(){
+  const f=FR[cur];if(f.range!=null&&(sub==null||sub>f.range))sub=f.range;
+  const k=f.range!=null?sub:null;
+  $('stepTitle').textContent=`Krok ${f.g+1}: ${f.t}`;
+  $('steps').innerHTML=GROUPS.map((t,i)=>`<a data-g="${i}" class="${i===f.g?'on':''}">${i+1} ${t}</a>`).join(' ');
+  document.querySelectorAll('#steps a').forEach(a=>a.onclick=()=>{const i=FR.findIndex(x=>x.g===+a.dataset.g);if(i>=0){cur=i;sub=FR[cur].range!=null?FR[cur].range:null;showFrame();}});
+  $('figS').innerHTML=f.d(k);
+  $('stepDo').textContent=typeof f.do==='function'?f.do(k):f.do;
+  $('stepCheck').textContent=typeof f.ck==='function'?f.ck(k):f.ck;
+  $('stepRangeBox').hidden=f.range==null;
+  if(f.range!=null){const r=$('stepRange');r.min=0;r.max=f.range;r.value=k;$('stepRangeN').textContent=`${k} / ${f.range}`;}
+  $('stepTbl').innerHTML=f.tb?f.tb(k):'';
+  $('animBox').hidden=!f.fix;$('anim').hidden=!(f.fix&&f.phase===1);if(ANIM){cancelAnimationFrame(ANIM);ANIM=null;}
+  $('prev').disabled=cur===0;$('next').disabled=cur===FR.length-1;
+}
+function renderResult(){
+  const n=R.n;
+  $('facts').textContent=`G: ${n} vrcholov, ${R.edges.length} hrán, stupeň ${R.deg.join(' alebo ')}, obvod ${R.gG===Infinity?'∞':R.gG}.`;
+  drawH();
+  $('check').textContent=`H: ${2*n} vrcholov, obvod ${R.gH===Infinity?'∞':R.gH}. Kontrola hamiltonovskej kružnice: ${R.ham?'OK':'ZLYHALA'}.`;
+  const cr=R.edges.filter(([u,v])=>R.s[key(u,v)]).map(([u,v])=>lab(u)+'-'+lab(v));
+  $('crossList').textContent=cr.length?cr.join(', '):'žiadne';
+  const adjH=adjOf(2*n,R.liftE),nameH=i=>i<n?lab(i):lab(i-n)+"'";
+  $('outG6').value=toG6(2*n,R.liftE);
+  $('outAdj').value=adjH.map((l,i)=>`${nameH(i)}: ${l.slice().sort((a,b)=>a-b).map(nameH).join(' ')}`).join('\n');
+  $('outCyc').value=R.cyc.map(([v,f])=>labL(v,f)).join(' ');
+}
+function run(text,pos,ex){
+  const e=$('err');e.hidden=true;let g;
+  try{g=parseInput(text);}catch(err){e.textContent='Chyba: '+err.message;e.hidden=false;return;}
+  let opts=null;if(ex&&ex.M){const ix=l=>g.labels.indexOf(l);opts={M:ex.M.map(([a,b])=>[ix(a),ix(b)]),tour:ex.tour?ex.tour.map(ix):null};}
+  const res=construct(g.n,g.edges,opts);if(res.error){e.textContent='Chyba: '+res.error;e.hidden=false;return;}
+  G=g;R=res;POS=pos&&pos.length===g.n?pos:springLayout(g.n,g.edges,11);renderResult();buildFrames();cur=0;sub=null;showFrame();
+}
+$('run').onclick=()=>{const ex=EX.find(x=>x.src===$('src').value.trim());run($('src').value,ex?ex.pos:null,ex);};
+$('ex').onchange=e=>{const v=e.target.value;if(v==='')return;const ex=EX[+v];$('src').value=ex.src;run(ex.src,ex.pos,ex);};
+$('prev').onclick=()=>{if(cur>0){cur--;sub=FR[cur].range!=null?FR[cur].range:null;showFrame();}};
+$('next').onclick=()=>{if(cur<FR.length-1){cur++;sub=FR[cur].range!=null?0:null;showFrame();}};
+$('stepRange').oninput=e=>{sub=+e.target.value;showFrame();};
+$('gview').onchange=e=>{GVIEW=e.target.checked;showFrame();};
+$('anim').onclick=()=>{const f=FR[cur].fix;if(!f||GVIEW)return;if(ANIM)cancelAnimationFrame(ANIM);
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;const dur=reduce?1:1800,t0=performance.now();
+  const step=now=>{const t=Math.min(1,(now-t0)/dur);$('figS').innerHTML=fixView(f,1,t);if(t<1)ANIM=requestAnimationFrame(step);else ANIM=null;};ANIM=requestAnimationFrame(step);};
+$('ex').value='2';$('src').value=EX[2].src;run(EX[2].src,EX[2].pos,EX[2]);
+})();
+</script>
+</body>
+</html>
