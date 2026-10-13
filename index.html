@@ -6,15 +6,15 @@
 <title>Hamiltonian 2-lift</title>
 <style>
 :root{color-scheme:light}
-body{background:#fff;color:#000;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px 40px}
+body{background:#fff;color:#000;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;padding-inline:16px;padding-block:20px 40px}
 #page{max-width:900px;margin:0 auto}
 h1{font-size:22px;margin:0 0 8px}
-h2{font-size:17px;margin:28px 0 8px;padding-bottom:3px;border-bottom:1px solid #ccc}
+h2{font-size:17px;margin:30px 0 8px;padding-bottom:3px;border-bottom:1px solid #ccc}
 p{margin:6px 0}
-ol{margin:6px 0;padding-left:24px}
+.idea{border-left:4px solid #999;padding:6px 12px;background:#f5f5f5;margin:12px 0}
 textarea{width:100%;box-sizing:border-box;font-family:Menlo,Consolas,monospace;font-size:13px;background:#fff;color:#000;border:1px solid #999}
-#src{height:130px}
-.out{height:70px}
+#src{height:110px}
+.out{height:64px}
 svg{width:100%;height:auto;border:1px solid #ccc;background:#fff;display:block}
 .wide{overflow-x:auto}
 table{border-collapse:collapse;font-family:Menlo,Consolas,monospace;font-size:12px;margin:4px 0}
@@ -28,6 +28,11 @@ th{background:#eee;font-family:Helvetica,Arial,sans-serif;font-weight:normal;tex
 .err{color:#b00}
 .small{font-size:13px;color:#444}
 code{font-family:Menlo,Consolas,monospace;font-size:13px}
+#steps{font-size:13px;line-height:1.9}
+#steps a{color:#000;text-decoration:none;border:1px solid #bbb;border-radius:3px;padding:1px 6px;margin-right:4px;white-space:nowrap;cursor:pointer}
+#steps a.on{background:#000;color:#fff;border-color:#000}
+.box{border:1px solid #ccc;padding:8px 12px;margin:8px 0}
+.box b{display:inline-block;min-width:92px}
 </style>
 </head>
 <body>
@@ -35,30 +40,21 @@ code{font-family:Menlo,Consolas,monospace;font-size:13px}
 
 <div id="page">
 <h1>Hamiltonian 2-lift of a regular graph</h1>
-<p>Input: a graph in graph6 format or as an adjacency list (one line per vertex, e.g. <code>1: 2 3 4</code>).<br>
-Output: a 2-lift H of G (2n vertices, same degrees, girth &ge; girth of G) together with a Hamiltonian cycle of H.</p>
+<p>This page takes a connected k-regular graph G and builds a graph H with twice as many vertices, the same degrees and girth at least the girth of G, such that H has a Hamiltonian cycle. Every step is shown the way you would do it by hand.</p>
+<p>H is a <b>2-lift</b> of G: every vertex v has two copies, v (copy 0) and v' (copy 1). Every edge uv is either <b>parallel</b> (u-v and u'-v') or <b>cross</b> (u-v' and u'-v). We only have to decide which edges are cross.</p>
+<p class="idea">Main idea: a Hamiltonian cycle of H is the same thing as a closed walk in G that visits every vertex <b>twice</b>. The first visit of a vertex is taken in copy 0, the second visit in copy 1, and an edge is cross exactly where the walk switches copies.</p>
 
-<p>In the lift every vertex v has two copies v and v'. An edge uv is either parallel (u-v, u'-v') or cross (u-v', u'-v).</p>
-<p>Algorithm:</p>
-<ol>
-<li>Find a perfect matching M and a 2-factor F disjoint from M such that F + M is connected (for cubic graphs F = E(G) - M).</li>
-<li>Double the edges of M and take an Euler tour of F + 2M. Every vertex has degree 4, so the tour visits every vertex twice.</li>
-<li>If the tour goes x, m(x), x along both copies of the matching edge (m(x) is the partner of x), reverse the part of the tour between the two visits of m(x). Repeat until there are no such returns.</li>
-<li>Start the tour with an M-edge. The first visit of a vertex gets layer 0, the second visit layer 1.</li>
-<li>An edge is cross if the layer changes along it, otherwise it is parallel.</li>
-</ol>
-<p>Then (w<sub>1</sub>, layer<sub>1</sub>), ..., (w<sub>2n</sub>, layer<sub>2n</sub>) is a Hamiltonian cycle of H.</p>
-
-<h2>Input</h2>
-<textarea id="src" spellcheck="false"></textarea>
+<h2>1. Input</h2>
+<p class="small">graph6 string, or an adjacency list with one line per vertex, e.g. <code>1: 2 3 4</code></p>
+<textarea id="src" spellcheck="false" aria-label="Input graph"></textarea>
 <p>
 <label for="ex">Example:</label>
 <select id="ex">
 <option value="">(choose)</option>
+<option value="2">Prism (6 vertices, easiest)</option>
 <option value="0">Petersen graph</option>
-<option value="1">Coxeter graph</option>
-<option value="2">Prism</option>
 <option value="3">Heawood graph</option>
+<option value="1">Coxeter graph</option>
 <option value="4">Octahedron (4-regular)</option>
 <option value="5">16-vertex graph (adjacency list)</option>
 </select>
@@ -68,34 +64,21 @@ Output: a 2-lift H of G (2n vertices, same degrees, girth &ge; girth of G) toget
 <p id="facts"></p>
 
 <div id="results">
-<h2>Construction step by step</h2>
+<h2>2. Step by step</h2>
+<p id="steps"></p>
 <p><button id="prev">&lt; Previous</button> <button id="next">Next &gt;</button> <b id="stepTitle"></b></p>
 <svg id="figS" viewBox="0 0 640 500" role="img" aria-label="Construction step"></svg>
-<p id="stepText"></p>
-<p id="animBox" hidden><button id="anim">Play the reversal</button> <label><input type="checkbox" id="gview"> show on the graph instead</label></p>
 <p id="stepRangeBox" hidden><input type="range" id="stepRange" style="width:60%" aria-label="Position"> <span id="stepRangeN"></span></p>
+<p id="animBox" hidden><button id="anim">Play the reversal</button> <label><input type="checkbox" id="gview"> show on the graph instead</label></p>
+<div class="box"><p><b>What to do:</b> <span id="stepDo"></span></p><p><b>Check:</b> <span id="stepCheck"></span></p></div>
 <div class="wide"><table id="stepTbl"></table></div>
-<h2>Graph G with M and F</h2>
-<svg id="figG" viewBox="0 0 640 500" role="img" aria-label="Graph G"></svg>
-<p class="small">red = M, blue = F (parallel), orange dashed = F (cross), grey dashed = other edges (parallel, not used)</p>
-<p id="mList"></p>
 
-<h2>Euler tour of F + 2M</h2>
-<p id="tourText"></p>
-<div class="wide"><table id="tourTbl"></table></div>
-<div id="fixBox"></div>
-
-<h2>Final tour and layers</h2>
-<div class="wide"><table id="labTbl"></table></div>
-<p>Cross edges: <code id="crossList"></code></p>
-
-<h2>Lift H</h2>
-<p class="small">Hamiltonian cycle of H drawn around a circle (vertices in cycle order). Black = edge inside one copy, orange dashed = cross edge between the copies, grey = other edges of H.</p>
-<svg id="figH" viewBox="0 0 640 640" role="img" aria-label="Hamiltonian cycle of H"></svg>
+<h2>3. Result</h2>
 <p id="check"></p>
-
-<h2>Output</h2>
-<p class="small">Vertex v' has index i + n where i is the index of v (same as double_cover_from_cross_mask).</p>
+<p class="small">The Hamiltonian cycle of H drawn around a circle, vertices in cycle order. Black = step inside one copy, orange dashed = cross step between the copies, grey = the other edges of H.</p>
+<svg id="figH" viewBox="0 0 640 640" role="img" aria-label="Hamiltonian cycle of H"></svg>
+<p>Cross edges of G: <code id="crossList"></code></p>
+<p class="small">Output. Vertex v' has index i + n, where i is the index of v (as in <code>double_cover_from_cross_mask</code>).</p>
 <p>graph6 of H:</p>
 <textarea class="out" id="outG6" readonly></textarea>
 <p>Adjacency list of H:</p>
@@ -200,13 +183,17 @@ function springLayout(n,edges,seed){
 function ring(k,cx,cy,r){const a=[];for(let i=0;i<k;i++){const t=-Math.PI/2+2*Math.PI*i/k;a.push([cx+r*Math.cos(t),cy+r*Math.sin(t)]);}return a;}
 
 /* ---------- construction ---------- */
-function construct(n,edges){
+function construct(n,edges,opts){
   if(n<4)return{error:'The graph needs at least 4 vertices.'};
   if(n>300)return{error:`The graph has ${n} vertices; this page handles up to 300.`};
   if(!connected(n,edges))return{error:'The graph is not connected. The construction needs a connected graph.'};
   const adj=adjOf(n,edges);
   if(adj.some(l=>l.length<3))return{error:'Some vertex has degree less than 3. Every vertex needs two 2-factor edges and one matching edge.'};
   let M=null,F=null,mate=null,why='';
+  if(opts&&opts.M){const Mk0=new Set(opts.M.map(([u,v])=>key(u,v)));const mt=new Array(n).fill(-1);let ok=opts.M.every(([u,v])=>edges.some(([a,b])=>key(a,b)===key(u,v)));
+    opts.M.forEach(([u,v])=>{if(mt[u]!==-1||mt[v]!==-1)ok=false;mt[u]=v;mt[v]=u;});
+    const rest=edges.filter(([u,v])=>!Mk0.has(key(u,v)));const dg=new Array(n).fill(0);rest.forEach(([u,v])=>{dg[u]++;dg[v]++;});
+    if(ok&&mt.every(x=>x!==-1)&&dg.every(d=>d===2)&&connected(n,edges)){M=opts.M.map(([u,v])=>[u,v]);F=rest;mate=mt;}}
   for(let att=0;att<40&&!F;att++){
     const r=rng(1000+att),A=adj.map(l=>att?shuffle(l.slice(),r):l.slice());
     const mt=maxMatching(n,A);
@@ -225,6 +212,11 @@ function construct(n,edges){
   while(path.length){const v=path[path.length-1];while(ptr[v]<A[v].length&&usedE[A[v][ptr[v]][0]])ptr[v]++;
     if(ptr[v]<A[v].length){const [e,w]=A[v][ptr[v]];usedE[e]=true;path.push(w);}else circ.push(path.pop());}
   circ.reverse();circ.pop();
+  if(opts&&opts.tour&&opts.tour.length===circ.length){const t=opts.tour,cnt={};let ok=true;
+    for(let i=0;i<t.length;i++){const k2=key(t[i],t[(i+1)%t.length]);cnt[k2]=(cnt[k2]||0)+1;}
+    const want={};F.forEach(([u,v])=>want[key(u,v)]=1);M.forEach(([u,v])=>want[key(u,v)]=2);
+    for(const k2 in cnt)if(want[k2]!==cnt[k2])ok=false;for(const k2 in want)if(cnt[k2]!==want[k2])ok=false;
+    if(ok)circ.splice(0,circ.length,...t);}
   const tour0=circ.slice();let tour=circ.slice();const L=tour.length;
   const backs=t=>{const r=[];for(let i=0;i<L;i++)if(t[(i+1)%L]===mate[t[i]]&&t[(i+2)%L]===t[i])r.push(i);return r;};
   const backs0=backs(tour0),fixes=[];let guard=0;
@@ -253,7 +245,7 @@ function ringPos(k,r){return ring(k,.5,.5,r);}
 const EX=[
   {src:'IheA@GUAo',pos:[...ring(5,.5,.52,.48),...ring(5,.5,.52,.22)]},
   {src:'[sGGQ?@?OH?@C???_COC@??C?OH??G?ID????_?G?G@??GA?C?@??AAA???GG??D'},
-  {src:'E{Sw',pos:[[.5,.02],[.02,.9],[.98,.9],[.5,.42],[.3,.72],[.7,.72]]},
+  {src:'1: 2 3 4\n2: 1 3 5\n3: 1 2 6\n4: 1 5 6\n5: 2 4 6\n6: 3 4 5',pos:[[.5,.02],[.02,.9],[.98,.9],[.5,.42],[.3,.72],[.7,.72]],M:[['1','4'],['2','5'],['3','6']],tour:['1','4','1','2','5','4','6','3','2','5','6','3']},
   {src:'MhEGHC@AI?_PC@_G_',pos:ringPos(14,.49)},
   {src:'E}lw',pos:[[.5,.02],[.02,.9],[.98,.9],[.36,.46],[.64,.46],[.5,.72]]},
   {src:'1: 2 3 4\n2: 1 11 14\n3: 1 12 16\n4: 1 13 15\n5: 8 9 10\n6: 7 9 10\n7: 6 8 12\n8: 5 7 13\n9: 5 6 11\n10: 5 6 11\n11: 2 9 10\n12: 3 7 15\n13: 4 8 16\n14: 2 15 16\n15: 4 12 14\n16: 3 13 14'}
@@ -264,15 +256,7 @@ const lab=v=>G.labels[v];
 const labL=(v,f)=>lab(v)+(f?"'":'');
 function line(a,b,c,w,d){return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?' stroke-dasharray="5 4"':''}/>`;}
 function node(p,t,r,fs){return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r}" fill="#fff" stroke="#000" stroke-width="1"/>`+(fs?`<text x="${p[0].toFixed(1)}" y="${(p[1]+fs*.36).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="${fs}" fill="#000">${t}</text>`:'');}
-function drawG(){
-  const X=v=>[40+POS[v][0]*560,30+POS[v][1]*440];const n=R.n;const r=n<=12?14:n<=30?11:n<=80?7:4,fs=r>=11?12:r>=7?9:0;
-  let o='';R.other.forEach(([u,v])=>o+=line(X(u),X(v),'#aaa',1,1));
-  R.F.forEach(([u,v])=>o+=R.s[key(u,v)]?line(X(u),X(v),'#e07b00',2,1):line(X(u),X(v),'#0a5bc4',2));
-  R.M.forEach(([u,v])=>o+=line(X(u),X(v),'#c00',4));
-  for(let v=0;v<n;v++)o+=node(X(v),lab(v),r,fs);
-  $('figG').innerHTML=o;
-  $('mList').textContent='M = {'+R.M.map(([u,v])=>lab(u)+'-'+lab(v)).join(', ')+'}';
-}
+function tbl(rows){return rows.map(r=>`<tr><th>${r[0]}</th>${r.slice(1).join('')}</tr>`).join('');}
 function drawH(){
   const n=R.n,N=2*n,P=ring(N,320,320,270),pos={};R.cyc.forEach(([v,f],i)=>pos[v+f*n]=P[i]);
   const on=new Set();for(let i=0;i<N;i++){const a=R.cyc[i][0]+R.cyc[i][1]*n,b=R.cyc[(i+1)%N][0]+R.cyc[(i+1)%N][1]*n;on.add(key(a,b));}
@@ -283,39 +267,13 @@ function drawH(){
     if(!fs&&N<=200){const a=-Math.PI/2+2*Math.PI*i/N;o+=`<text x="${(320+292*Math.cos(a)).toFixed(1)}" y="${(323+292*Math.sin(a)).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="8">${labL(v,f)}</text>`;}});
   $('figH').innerHTML=o;
 }
-function tbl(rows){return rows.map(r=>`<tr><th>${r[0]}</th>${r.slice(1).join('')}</tr>`).join('');}
-function renderAll(){
-  const n=R.n;
-  $('facts').textContent=`n = ${n}, m = ${R.edges.length}, degrees: ${R.deg.join(', ')}, girth = ${R.gG===Infinity?'inf':R.gG}`;
-  drawG();
-  const t0=R.tour0,Ln=t0.length,bad=new Set();R.backs0.forEach(i=>{bad.add(i);bad.add((i+1)%Ln);bad.add((i+2)%Ln);});
-  $('tourText').textContent=`Length ${Ln}. Returns x, m(x), x: ${R.backs0.length} (marked red).`;
-  $('tourTbl').innerHTML=tbl([['step',...t0.map((_,k)=>`<td>${k+1}</td>`)],['vertex',...t0.map((v,k)=>`<td class="${bad.has(k)?'r':''}">${lab(v)}</td>`)]]);
-  $('fixBox').innerHTML=R.fixes.length?R.fixes.map((f,i)=>`<p>Fix ${i+1}: return ${lab(f.x)}, ${lab(f.xb)}, ${lab(f.x)}. Reversed part in yellow.</p><div class="wide"><table>${tbl([['before',...f.before.map((v,k)=>`<td class="${fixCls(f,k,0)}">${lab(v)}</td>`)],['after',...f.after.map((v,k)=>`<td class="${fixCls(f,k,1)}">${lab(v)}</td>`)]])}</table></div>`).join(''):'<p>No returns.</p>';
-  const W=R.fin,L2=W.length;
-  $('labTbl').innerHTML=tbl([['k',...W.map((_,k)=>`<td>${k+1}</td>`)],['vertex',...W.map(v=>`<td>${lab(v)}</td>`)],['layer',...R.h.map(x=>`<td>${x}</td>`)],
-    ['next edge',...W.map((v,k)=>{const w=W[(k+1)%L2],c=R.h[k]!==R.h[(k+1)%L2];return `<td class="${c?'c':''}">${R.mate[v]===w?'M':'F'}${c?' cross':''}</td>`;})]]);
-  const cr=R.edges.filter(([u,v])=>R.s[key(u,v)]).map(([u,v])=>lab(u)+'-'+lab(v));
-  $('crossList').textContent=cr.length?cr.join(', '):'none';
-  drawH();
-  $('check').textContent=`H: ${2*n} vertices, girth ${R.gH===Infinity?'inf':R.gH}. Hamiltonian cycle check: ${R.ham?'OK':'FAILED'}.`;
-  const adjH=adjOf(2*n,R.liftE),nameH=i=>i<n?lab(i):lab(i-n)+"'";
-  $('outG6').value=toG6(2*n,R.liftE);
-  $('outAdj').value=adjH.map((l,i)=>`${nameH(i)}: ${l.slice().sort((a,b)=>a-b).map(nameH).join(' ')}`).join('\n');
-  $('outCyc').value=R.cyc.map(([v,f])=>labL(v,f)).join(' ');
-}
-function run(text,pos){
-  const e=$('err');e.hidden=true;let g;
-  try{g=parseInput(text);}catch(err){e.textContent='Error: '+err.message;e.hidden=false;return;}
-  const res=construct(g.n,g.edges);if(res.error){e.textContent='Error: '+res.error;e.hidden=false;return;}
-  G=g;R=res;POS=pos&&pos.length===g.n?pos:springLayout(g.n,g.edges,11);renderAll();buildFrames();cur=0;sub=null;showFrame();
-}
-$('run').onclick=()=>{const ex=EX.find(x=>x.src===$('src').value.trim());run($('src').value,ex?ex.pos:null);};
-$('ex').onchange=e=>{const v=e.target.value;if(v==='')return;const ex=EX[+v];$('src').value=ex.src;run(ex.src,ex.pos);};
+function fCycles(){const A=adjOf(R.n,R.F),seen=new Array(R.n).fill(false),out=[];
+  for(let s=0;s<R.n;s++){if(seen[s])continue;const c=[s];seen[s]=true;let prev=-1,cur=s;
+    for(;;){const nx=A[cur].find(w=>w!==prev&&!seen[w]);if(nx==null)break;c.push(nx);seen[nx]=true;prev=cur;cur=nx;}out.push(c);}
+  return out;}
 
-/* ---------- step-by-step view ---------- */
+/* ---------- drawing helpers ---------- */
 const C={m:'#c00',f:'#0a5bc4',o:'#aaa',x:'#e07b00',l0:'#1f8a3b',l1:'#7b3fb0',hl:'#e0b400',bad:'#c00'};
-let FR=[],cur=0,sub=0;
 function XS(v){return[40+POS[v][0]*560,30+POS[v][1]*440];}
 function offL(a,b,d){const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return[[a[0]-dy/l*d,a[1]+dx/l*d],[b[0]-dy/l*d,b[1]+dx/l*d]];}
 function lineO(a,b,c,w,d,op){return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?' stroke-dasharray="5 4"':''}${op!=null?` opacity="${op}"`:''}/>`;}
@@ -417,47 +375,114 @@ function localPic(f,phase){
   return o;}
 function fixView(f,phase,tt){return GVIEW?fixPic(f,phase):ringPic(f,phase,tt)+localPic(f,phase);}
 function rowT(name,t,cls){return `<tr><th>${name}</th>${t.map((v,k)=>`<td class="${cls?cls(k):''}">${v}</td>`).join('')}</tr>`;}
+
+function liftEdgesPic(){const n=R.n,P={};
+  for(let v=0;v<n;v++){const [x,y]=POS[v];P[v]=[25+x*270,70+y*370];P[v+n]=[345+x*270,70+y*370];}
+  let o=`<text x="160" y="35" text-anchor="middle" font-family="Arial" font-size="14">copy 0 (v)</text><text x="480" y="35" text-anchor="middle" font-family="Arial" font-size="14">copy 1 (v')</text>`;
+  R.liftE.forEach(([a,b])=>{const cr=(a<n)!==(b<n);o+=lineO(P[a],P[b],cr?C.x:'#000',cr?2:1.5,cr);});
+  const r=n<=12?11:n<=30?8:n<=80?5:3,fs=n<=12?10:n<=30?8:0;
+  for(let i=0;i<2*n;i++){const v=i%n,f=i>=n?1:0;o+=node(P[i],labL(v,f),r,fs);}
+  return o;}
+function graphCross(){let o='';R.other.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.o,1,1));
+  R.F.forEach(([u,v])=>o+=R.s[key(u,v)]?lineO(XS(u),XS(v),C.x,3,1):lineO(XS(u),XS(v),C.f,2));
+  R.M.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.m,4));return o+vertsS();}
+function graphM(){let o='';R.other.forEach(([u,v])=>o+=lineO(XS(u),XS(v),'#bbb',1.2));R.F.forEach(([u,v])=>o+=lineO(XS(u),XS(v),'#bbb',1.2));
+  R.M.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.m,4));return o+vertsS();}
+
+/* ---------- the steps ---------- */
+const GROUPS=['Draw G','Matching M','2-factor F','Double M','Euler tour','Find returns','Fix returns','Number visits','Cross edges','Draw the lift','Hamiltonian cycle'];
+let FR=[],cur=0,sub=null;
 function buildFrames(){
-  const n=R.n,t0=R.tour0,Ln=t0.length;FR=[];
-  FR.push({t:'Input graph G',x:`G has ${n} vertices and ${R.edges.length} edges.`,d:()=>baseS('plain')+vertsS()});
-  FR.push({t:'Perfect matching M and 2-factor F',x:'Red = M (one edge at every vertex), blue = F (two edges at every vertex, the edges form cycles)'+(R.other.length?', grey dashed = other edges.':'.'),d:()=>baseS('mf')+vertsS()});
-  FR.push({t:'Double the edges of M',x:'In F + 2M every vertex has degree 4, so the multigraph has an Euler tour.',d:()=>baseS('double')+vertsS()});
-  FR.push({t:'Euler tour of F + 2M',range:Ln,x:k=>`Tour after ${k} of ${Ln} steps. Every vertex will be visited twice.`,
-    d:k=>tourS(t0,k,()=>'#000',k<Ln?new Set([t0[k%Ln]]):null),tb:k=>rowT('step',t0.map((_,i)=>i+1),i=>i===k-1?'y':'')+rowT('vertex',t0.map(lab),i=>i<k?'':'')});
-  const bad=new Set();R.backs0.forEach(i=>{bad.add(i);bad.add((i+1)%Ln);});
-  const badV=new Set();R.backs0.forEach(i=>{bad.add((i+2)%Ln);badV.add(t0[(i+1)%Ln]);});
-  FR.push({t:'Returns x, m(x), x',x:R.backs0.length?`The tour goes back along the same matching edge ${R.backs0.length} time${R.backs0.length>1?'s':''} (red). Such a return is not allowed, because the edge would have to be parallel and cross at the same time.`:'The tour has no returns, so nothing has to be fixed.',
-    d:()=>tourS(t0,Ln,k=>{const u=t0[k],v=t0[(k+1)%Ln];return R.backs0.some(i=>(i===k||(i+1)%Ln===k))&&R.mate[u]===v?C.bad:'#bbb';},badV),tb:()=>rowT('vertex',t0.map(lab),k=>bad.has(k)?'r':'')});
+  const n=R.n,m=R.edges.length,t0=R.tour0,Ln=t0.length,W=R.fin,LW=W.length,k3=R.deg.length===1&&R.deg[0]===3;
+  const E=(u,v)=>lab(u)+'-'+lab(v);
+  FR=[];
+  FR.push({g:0,t:'Draw the graph G',d:()=>baseS('plain')+vertsS(),
+    do:'Draw the input graph G.',ck:`Every vertex has degree ${R.deg.join(' or ')}. G has ${n} vertices and ${m} edges.`});
+  FR.push({g:1,t:'Choose a perfect matching M (red)',d:()=>graphM(),
+    do:'Colour some edges red so that every vertex touches exactly one red edge. This is a perfect matching M. (If you get stuck, take an alternating path between the two free vertices and swap red/not red on it.)',
+    ck:`${R.M.length} red edges: ${R.M.map(([u,v])=>E(u,v)).join(', ')}. Every vertex touches exactly one of them.`});
+  const cyc=fCycles();
+  FR.push({g:2,t:'The 2-factor F (blue)',d:()=>baseS('mf')+vertsS(),
+    do:k3?'Colour all remaining edges blue. This is the 2-factor F.':'Among the remaining edges choose blue ones so that every vertex touches exactly two. This is the 2-factor F. The grey dashed edges are not used; they will simply be parallel.',
+    ck:`Every vertex has 2 blue edges. The blue edges form ${cyc.length} cycle${cyc.length>1?'s':''}: ${cyc.map(c=>c.map(lab).join('-')).join(',  ')}.`});
+  FR.push({g:3,t:'Draw every red edge twice',d:()=>baseS('double')+vertsS(),
+    do:'Draw a second red line next to every red edge.',ck:'Every vertex now has 4 lines: 2 blue and 2 red. All degrees are even, so there is an Euler tour.'});
+  FR.push({g:4,t:'Walk an Euler tour',range:Ln,d:k=>tourS(t0,k,()=>'#000',k<Ln?new Set([t0[k%Ln]]):null),
+    do:'Start anywhere and walk along the lines, using every line exactly once, until you are back at the start. Cross out each line you use and write the vertices you pass into a list. Use the slider to walk step by step.',
+    ck:k=>`${k} of ${Ln} steps walked. At the end the list has ${Ln} entries and every vertex appears exactly twice.`,
+    tb:k=>rowT('step',t0.map((_,i)=>i+1),i=>i===k-1?'y':'')+rowT('vertex',t0.map(lab),i=>i<k?'':'')});
+  const bad=new Set();R.backs0.forEach(i=>{bad.add(i);bad.add((i+1)%Ln);bad.add((i+2)%Ln);});
+  const badV=new Set(R.backs0.map(i=>t0[(i+1)%Ln]));
+  FR.push({g:5,t:'Find the returns',d:()=>tourS(t0,Ln,k=>{const u=t0[k],v=t0[(k+1)%Ln];return R.backs0.some(i=>(i===k||(i+1)%Ln===k))&&R.mate[u]===v?C.bad:'#bbb';},badV),
+    do:'Look in the list for three entries a, b, a where a-b is a red edge (also across the end of the list). There the walk goes along a red edge and immediately back along its second copy. Such a return is not allowed: that edge would have to be parallel and cross at the same time.',
+    ck:R.backs0.length?`${R.backs0.length} return${R.backs0.length>1?'s':''} found (red): ${R.backs0.map(i=>`${lab(t0[i])}, ${lab(t0[(i+1)%Ln])}, ${lab(t0[(i+2)%Ln])}`).join(';  ')}.`:'No returns. Step 7 is not needed.',
+    tb:()=>rowT('vertex',t0.map(lab),k=>bad.has(k)?'r':'')});
+  if(!R.fixes.length)FR.push({g:6,t:'Fix the returns',d:()=>tourS(t0,Ln,()=>'#000'),do:'Nothing to do: the tour has no returns.',ck:'The list stays as it is.',tb:()=>rowT('vertex',t0.map(lab))});
   R.fixes.forEach((f,i)=>{
     const X=lab(f.x),XB=lab(f.xb),Y=lab(f.y),Z=lab(f.z);
-    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: the problem`,fix:f,phase:0,
-      x:`Left: the tour drawn as a necklace, vertices in the order the tour visits them. Vertex x̄ = ${XB} appears twice (orange rings). At one visit the tour goes ${X} → ${XB} → ${X}, there and back along the same matching edge (red). That is not allowed. Right: at vertex ${XB} one passage uses both copies of the matching edge (red), the other uses the two F-edges to ${Y} and ${Z} (blue). Fix: cut the necklace at the two visits of ${XB} (black marks) and turn the yellow piece around.`,
-      d:()=>fixView(f,0,1),tb:()=>rowT('tour',f.before.map(lab),k=>fixCls(f,k,0))});
-    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: after turning the piece around`,fix:f,phase:1,
-      x:`The yellow piece now runs backwards (press "Play the reversal" to watch it turn). The necklace still contains every edge exactly once. Right: at vertex ${XB} both passages now use one matching edge and one F-edge (green): ${X} → ${XB} → ${Y} and ${X} → ${XB} → ${Z}. So the return is gone, and no other vertex changed.`,
-      d:()=>fixView(f,1,1),tb:()=>rowT('before',f.before.map(lab),k=>fixCls(f,k,0))+rowT('after',f.after.map(lab),k=>fixCls(f,k,1))});
+    FR.push({g:6,t:`Fix ${i+1} of ${R.fixes.length}: the return ${X}, ${XB}, ${X}`,fix:f,phase:0,d:()=>fixView(f,0,1),
+      do:`Find the other place where ${XB} appears in the list (${Y}, ${XB}, ${Z}). Cut the list at both visits of ${XB} and write the yellow part between them in reverse order.`,
+      ck:`Left: the list drawn as a necklace. Orange rings = the two visits of ${XB}, red = the return, black marks = where we cut. Right: at vertex ${XB} one passage uses both copies of the red edge.`,
+      tb:()=>rowT('list',f.before.map(lab),k=>fixCls(f,k,0))});
+    FR.push({g:6,t:`Fix ${i+1} of ${R.fixes.length}: after reversing`,fix:f,phase:1,d:()=>fixView(f,1,1),
+      do:'Press "Play the reversal" to see the yellow piece turn around.',
+      ck:`Around ${XB} the walk now goes ${X} - ${XB} - ${Y} and ${X} - ${XB} - ${Z}: every passage uses one red and one blue edge, so the return is gone. The list still uses exactly the same edges.`,
+      tb:()=>rowT('before',f.before.map(lab),k=>fixCls(f,k,0))+rowT('after',f.after.map(lab),k=>fixCls(f,k,1))});
   });
-  const W=R.fin;
-  FR.push({t:'Layers',x:'The final tour starts with an M-edge. Green = traversal of an M-edge at the first visits (layer 0), purple = at the second visits (layer 1).',
-    d:()=>tourS(W,W.length,k=>R.mate[W[k]]===W[(k+1)%W.length]?(R.h[k]?C.l1:C.l0):'#999'),tb:()=>rowT('vertex',W.map(lab))+rowT('layer',R.h,k=>R.h[k]?'':'')});
-  FR.push({t:'Cross edges',x:'An edge is cross (orange dashed) when the layer changes along it. All other edges are parallel.',
-    d:()=>{let o='';R.other.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.o,1,1));R.F.forEach(([u,v])=>o+=R.s[key(u,v)]?lineO(XS(u),XS(v),C.x,3,1):lineO(XS(u),XS(v),C.f,2));R.M.forEach(([u,v])=>o+=lineO(XS(u),XS(v),C.m,4));return o+vertsS();},
-    tb:()=>rowT('vertex',W.map(lab))+rowT('layer',R.h)+rowT('next edge',W.map((v,k)=>R.h[k]!==R.h[(k+1)%W.length]?'cross':''),k=>R.h[k]!==R.h[(k+1)%W.length]?'c':'')});
-  FR.push({t:'Lift H and its Hamiltonian cycle',range:2*n,x:k=>`Two copies of G. Parallel edges stay inside a copy, cross edges go between the copies. Hamiltonian cycle: ${k} of ${2*n} edges drawn.`,
-    d:k=>liftCopies(k),tb:()=>rowT('cycle',R.cyc.map(([v,f])=>labL(v,f)))});
+  const edgeKind=k=>R.mate[W[k]]===W[(k+1)%LW]?'red':'blue';
+  FR.push({g:7,t:'Number the visits',d:()=>tourS(W,LW,k=>R.mate[W[k]]===W[(k+1)%LW]?(R.h[k]?C.l1:C.l0):'#bbb'),
+    do:'Start the list at a red edge. Under every vertex write 0 if you see it for the first time and 1 if you see it for the second time.',
+    ck:'Under every red edge of the list there is 0 0 or 1 1, never 0 1. In the picture a red edge is green when walked with 0 0 and purple when walked with 1 1.',
+    tb:()=>rowT('k',W.map((_,i)=>i+1))+rowT('vertex',W.map(lab))+rowT('number',R.h,k=>R.h[k]?'b':'')+rowT('edge to next',W.map((_,k)=>edgeKind(k)),k=>edgeKind(k)==='red'?'r':'')});
+  const cr=R.edges.filter(([u,v])=>R.s[key(u,v)]).map(([u,v])=>E(u,v));
+  FR.push({g:8,t:'Find the cross edges',d:()=>graphCross(),
+    do:'Go through the list. Between two neighbours, and from the last vertex back to the first, look at the numbers. If the number changes (0 to 1 or 1 to 0), that edge is cross. All other edges are parallel.',
+    ck:`Cross edges (orange dashed): ${cr.join(', ')||'none'}. Red edges never change their number, so they are always parallel.`,
+    tb:()=>rowT('step',W.map((v,k)=>`${lab(v)}→${lab(W[(k+1)%LW])}`))+rowT('numbers',W.map((v,k)=>`${R.h[k]}→${R.h[(k+1)%LW]}`))+rowT('cross?',W.map((v,k)=>R.h[k]!==R.h[(k+1)%LW]?'yes':''),k=>R.h[k]!==R.h[(k+1)%LW]?'c':'')});
+  FR.push({g:9,t:'Draw the lift H',d:()=>liftEdgesPic(),
+    do:"Draw G twice: copy 0 with vertices v and copy 1 with vertices v'. A parallel edge uv is drawn inside both copies (u-v and u'-v'). A cross edge uv is drawn between the copies (u-v' and u'-v).",
+    ck:`H has ${2*n} vertices and ${2*m} edges, and every vertex of H has degree ${R.deg.join(' or ')}.`});
+  FR.push({g:10,t:'Draw the Hamiltonian cycle',range:2*n,d:k=>liftCopies(k),
+    do:"Follow the list from step 8. A vertex with number 0 is taken in copy 0, a vertex with number 1 in copy 1 (written with '). Use the slider to draw the cycle step by step.",
+    ck:k=>`${k} of ${2*n} steps drawn. At the end all ${2*n} vertices of H are visited exactly once and every step uses an edge of H: a Hamiltonian cycle.`,
+    tb:()=>rowT('cycle',R.cyc.map(([v,f])=>labL(v,f)))});
 }
 function showFrame(){
   const f=FR[cur];if(f.range!=null&&(sub==null||sub>f.range))sub=f.range;
-  $('stepTitle').textContent=`Step ${cur+1} of ${FR.length}: ${f.t}`;
   const k=f.range!=null?sub:null;
+  $('stepTitle').textContent=`Step ${f.g+1}: ${f.t}`;
+  $('steps').innerHTML=GROUPS.map((t,i)=>`<a data-g="${i}" class="${i===f.g?'on':''}">${i+1} ${t}</a>`).join(' ');
+  document.querySelectorAll('#steps a').forEach(a=>a.onclick=()=>{const i=FR.findIndex(x=>x.g===+a.dataset.g);if(i>=0){cur=i;sub=FR[cur].range!=null?FR[cur].range:null;showFrame();}});
   $('figS').innerHTML=f.d(k);
-  $('stepText').textContent=typeof f.x==='function'?f.x(k):f.x;
+  $('stepDo').textContent=typeof f.do==='function'?f.do(k):f.do;
+  $('stepCheck').textContent=typeof f.ck==='function'?f.ck(k):f.ck;
   $('stepRangeBox').hidden=f.range==null;
   if(f.range!=null){const r=$('stepRange');r.min=0;r.max=f.range;r.value=k;$('stepRangeN').textContent=`${k} / ${f.range}`;}
   $('stepTbl').innerHTML=f.tb?f.tb(k):'';
   $('animBox').hidden=!f.fix;$('anim').hidden=!(f.fix&&f.phase===1);if(ANIM){cancelAnimationFrame(ANIM);ANIM=null;}
   $('prev').disabled=cur===0;$('next').disabled=cur===FR.length-1;
 }
+function renderResult(){
+  const n=R.n;
+  $('facts').textContent=`G: ${n} vertices, ${R.edges.length} edges, degree ${R.deg.join(' or ')}, girth ${R.gG===Infinity?'inf':R.gG}.`;
+  drawH();
+  $('check').textContent=`H: ${2*n} vertices, girth ${R.gH===Infinity?'inf':R.gH}. Hamiltonian cycle check: ${R.ham?'OK':'FAILED'}.`;
+  const cr=R.edges.filter(([u,v])=>R.s[key(u,v)]).map(([u,v])=>lab(u)+'-'+lab(v));
+  $('crossList').textContent=cr.length?cr.join(', '):'none';
+  const adjH=adjOf(2*n,R.liftE),nameH=i=>i<n?lab(i):lab(i-n)+"'";
+  $('outG6').value=toG6(2*n,R.liftE);
+  $('outAdj').value=adjH.map((l,i)=>`${nameH(i)}: ${l.slice().sort((a,b)=>a-b).map(nameH).join(' ')}`).join('\n');
+  $('outCyc').value=R.cyc.map(([v,f])=>labL(v,f)).join(' ');
+}
+function run(text,pos,ex){
+  const e=$('err');e.hidden=true;let g;
+  try{g=parseInput(text);}catch(err){e.textContent='Error: '+err.message;e.hidden=false;return;}
+  let opts=null;if(ex&&ex.M){const ix=l=>g.labels.indexOf(l);opts={M:ex.M.map(([a,b])=>[ix(a),ix(b)]),tour:ex.tour?ex.tour.map(ix):null};}
+  const res=construct(g.n,g.edges,opts);if(res.error){e.textContent='Error: '+res.error;e.hidden=false;return;}
+  G=g;R=res;POS=pos&&pos.length===g.n?pos:springLayout(g.n,g.edges,11);renderResult();buildFrames();cur=0;sub=null;showFrame();
+}
+$('run').onclick=()=>{const ex=EX.find(x=>x.src===$('src').value.trim());run($('src').value,ex?ex.pos:null,ex);};
+$('ex').onchange=e=>{const v=e.target.value;if(v==='')return;const ex=EX[+v];$('src').value=ex.src;run(ex.src,ex.pos,ex);};
 $('prev').onclick=()=>{if(cur>0){cur--;sub=FR[cur].range!=null?FR[cur].range:null;showFrame();}};
 $('next').onclick=()=>{if(cur<FR.length-1){cur++;sub=FR[cur].range!=null?0:null;showFrame();}};
 $('stepRange').oninput=e=>{sub=+e.target.value;showFrame();};
@@ -465,9 +490,8 @@ $('gview').onchange=e=>{GVIEW=e.target.checked;showFrame();};
 $('anim').onclick=()=>{const f=FR[cur].fix;if(!f||GVIEW)return;if(ANIM)cancelAnimationFrame(ANIM);
   const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;const dur=reduce?1:1800,t0=performance.now();
   const step=now=>{const t=Math.min(1,(now-t0)/dur);$('figS').innerHTML=fixView(f,1,t);if(t<1)ANIM=requestAnimationFrame(step);else ANIM=null;};ANIM=requestAnimationFrame(step);};
-$('src').value=EX[0].src;run(EX[0].src,EX[0].pos);
+$('ex').value='2';$('src').value=EX[2].src;run(EX[2].src,EX[2].pos,EX[2]);
 })();
 </script>
-
 </body>
 </html>
