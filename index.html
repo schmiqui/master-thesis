@@ -72,6 +72,7 @@ Output: a 2-lift H of G (2n vertices, same degrees, girth &ge; girth of G) toget
 <p><button id="prev">&lt; Previous</button> <button id="next">Next &gt;</button> <b id="stepTitle"></b></p>
 <svg id="figS" viewBox="0 0 640 500" role="img" aria-label="Construction step"></svg>
 <p id="stepText"></p>
+<p id="animBox" hidden><button id="anim">Play the reversal</button> <label><input type="checkbox" id="gview"> show on the graph instead</label></p>
 <p id="stepRangeBox" hidden><input type="range" id="stepRange" style="width:60%" aria-label="Position"> <span id="stepRangeN"></span></p>
 <div class="wide"><table id="stepTbl"></table></div>
 <h2>Graph G with M and F</h2>
@@ -372,6 +373,49 @@ function fixPic(f,phase){
   if(f.y!==f.x&&f.y!==f.xb)o+=tagV(f.y,'y','blue');
   if(f.z!==f.x&&f.z!==f.xb&&f.z!==f.y)o+=tagV(f.z,'z','blue');
   return o;}
+let GVIEW=false,ANIM=null;
+const FILL={y:'#ffe680'};
+function clsCol(c){return c==='r'?'#c00':c==='b'?'#0a5bc4':c==='g'?'#1f8a3b':'#555';}
+function ringPic(f,phase,tt){
+  const L=f.before.length,cx=195,cy=255,R0=172,a=f.a,b=f.b;
+  const ang=i=>-Math.PI/2+2*Math.PI*i/L;
+  const at=(i,rad)=>[cx+rad*Math.cos(ang(i)),cy+rad*Math.sin(ang(i))];
+  const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  const e=ease(tt);
+  // position of the bead that sits in slot s of the current sequence
+  const span=Math.max(1,b-a);
+  const pos=s=>{if(phase&&s>=a&&s<=b){const i=a+b-s,th=ang(i)+(ang(s)-ang(i))*e,depth=0.15+0.55*(i-a)/span,rad=R0*(1-depth*Math.sin(Math.PI*e));return[cx+rad*Math.cos(th),cy+rad*Math.sin(th)];}return at(s,R0);};
+  const seq=phase?f.after:f.before;
+  const br=L<=24?13:L<=40?10:L<=70?7:4,fs=br>=10?(br>=13?11:9):0;
+  let o=`<circle cx="${cx}" cy="${cy}" r="${R0}" fill="none" stroke="#eee" stroke-width="1"/>`;
+  const E=fixEdges(f,phase),edgeCol={};for(const c of ['red','blue','green'])for(const k of E[c])edgeCol[k]=ARC[c];
+  for(let k=0;k<L;k++){const p=pos(k),q=pos((k+1)%L);const inSeg=k>=a&&k<b;const col=edgeCol[k]||(inSeg?'#e0b400':'#9a9a9a');
+    o+=`<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}" stroke="${col}" stroke-width="${edgeCol[k]||inSeg?3:1.5}"/>`;}
+  if(!phase){for(const k of [a-1,b]){const th=(ang(k)+ang(k+1))/2;const p1=[cx+(R0-16)*Math.cos(th),cy+(R0-16)*Math.sin(th)],p2=[cx+(R0+16)*Math.cos(th),cy+(R0+16)*Math.sin(th)];
+    o+=`<line x1="${p1[0].toFixed(1)}" y1="${p1[1].toFixed(1)}" x2="${p2[0].toFixed(1)}" y2="${p2[1].toFixed(1)}" stroke="#000" stroke-width="3"/>`;}}
+  for(let k=0;k<L;k++){const p=pos(k),v=seq[k],c=fixCls(f,k,phase);
+    if(v===f.xb)o+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${br+5}" fill="none" stroke="${ARC.orange}" stroke-width="2.5"/>`;
+    o+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${br}" fill="${c==='y'?FILL.y:'#fff'}" stroke="${clsCol(c)}" stroke-width="${c&&c!=='y'?2.2:1}"/>`;
+    if(fs)o+=`<text x="${p[0].toFixed(1)}" y="${(p[1]+fs*.36).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="${fs}">${lab(v)}</text>`;}
+  o+=`<text x="${cx}" y="28" text-anchor="middle" font-family="Arial" font-size="13" fill="#444">the tour as a necklace</text>`;
+  return o;}
+function localPic(f,phase){
+  const C0=[535,255],X=[445,255],Y=[615,160],Z=[615,350];
+  const ptOn=(A,B,d)=>{const dx=B[0]-A[0],dy=B[1]-A[1],l=Math.hypot(dx,dy);return[A[0]+dx/l*d,A[1]+dy/l*d];};
+  let o=`<line x1="398" y1="40" x2="398" y2="470" stroke="#ddd"/><text x="520" y="28" text-anchor="middle" font-family="Arial" font-size="13" fill="#444">at vertex x̄ = ${lab(f.xb)}</text>`;
+  const Xu=[X[0],X[1]-11],Xl=[X[0],X[1]+11],Cu=[C0[0],C0[1]-11],Cl=[C0[0],C0[1]+11];
+  o+=`<line x1="${Cu[0]}" y1="${Cu[1]}" x2="${Xu[0]}" y2="${Xu[1]}" stroke="#c00" stroke-width="2.5"/><line x1="${Cl[0]}" y1="${Cl[1]}" x2="${Xl[0]}" y2="${Xl[1]}" stroke="#c00" stroke-width="2.5"/>`;
+  o+=`<line x1="${C0[0]}" y1="${C0[1]}" x2="${Y[0]}" y2="${Y[1]}" stroke="#0a5bc4" stroke-width="2"/><line x1="${C0[0]}" y1="${C0[1]}" x2="${Z[0]}" y2="${Z[1]}" stroke="#0a5bc4" stroke-width="2"/>`;
+  const Mu=ptOn(Cu,Xu,62),Ml=ptOn(Cl,Xl,62),Py=ptOn(C0,Y,78),Pz=ptOn(C0,Z,78);
+  const pas=(A,B,col,dash,lbl,lp)=>`<path d="M${A[0].toFixed(1)},${A[1].toFixed(1)} Q${C0[0]},${C0[1]} ${B[0].toFixed(1)},${B[1].toFixed(1)}" fill="none" stroke="${col}" stroke-width="7" stroke-opacity=".45" stroke-linecap="round"${dash?' stroke-dasharray="2 9"':''}/>`+(lbl?`<text x="${lp[0]}" y="${lp[1]}" text-anchor="middle" font-family="Arial" font-size="12" fill="${col}">${lbl}</text>`:'');
+  if(!phase){o+=pas(Mu,Ml,'#c00',0,'passage 1: return',[478,218])+pas(Py,Pz,'#0a5bc4',0,'passage 2',[600,259]);}
+  else{o+=pas(Mu,Py,'#1f8a3b',0,'passage 1',[520,180])+pas(Ml,Pz,'#1f8a3b',0,'passage 2',[520,340]);}
+  o+=node(C0,lab(f.xb),15,12)+`<circle cx="${C0[0]}" cy="${C0[1]}" r="20" fill="none" stroke="${ARC.orange}" stroke-width="2.5"/>`;
+  o+=node(X,lab(f.x),15,12)+node(Y,lab(f.y),15,12)+node(Z,lab(f.z),15,12);
+  o+=`<text x="450" y="292" text-anchor="middle" font-family="Arial" font-size="11" fill="#c00">x: matching</text><text x="450" y="305" text-anchor="middle" font-family="Arial" font-size="11" fill="#c00">edge, 2 copies</text>`;
+  o+=`<text x="605" y="135" text-anchor="middle" font-family="Arial" font-size="11" fill="#0a5bc4">y (F-edge)</text><text x="605" y="383" text-anchor="middle" font-family="Arial" font-size="11" fill="#0a5bc4">z (F-edge)</text>`;
+  return o;}
+function fixView(f,phase,tt){return GVIEW?fixPic(f,phase):ringPic(f,phase,tt)+localPic(f,phase);}
 function rowT(name,t,cls){return `<tr><th>${name}</th>${t.map((v,k)=>`<td class="${cls?cls(k):''}">${v}</td>`).join('')}</tr>`;}
 function buildFrames(){
   const n=R.n,t0=R.tour0,Ln=t0.length;FR=[];
@@ -385,13 +429,13 @@ function buildFrames(){
   FR.push({t:'Returns x, m(x), x',x:R.backs0.length?`The tour goes back along the same matching edge ${R.backs0.length} time${R.backs0.length>1?'s':''} (red). Such a return is not allowed, because the edge would have to be parallel and cross at the same time.`:'The tour has no returns, so nothing has to be fixed.',
     d:()=>tourS(t0,Ln,k=>{const u=t0[k],v=t0[(k+1)%Ln];return R.backs0.some(i=>(i===k||(i+1)%Ln===k))&&R.mate[u]===v?C.bad:'#bbb';},badV),tb:()=>rowT('vertex',t0.map(lab),k=>bad.has(k)?'r':'')});
   R.fixes.forEach((f,i)=>{
-    const m=f.b-f.a;
-    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: before`,
-      x:`Return: the tour goes x → x̄ → x, here ${lab(f.x)} → ${lab(f.xb)} → ${lab(f.x)} (red, both copies of the matching edge). Vertex x̄ = ${lab(f.xb)} is passed a second time between y = ${lab(f.y)} and z = ${lab(f.z)} (blue). The orange path joins the two visits of x̄; its ${m} steps are numbered in the order in which the tour walks them. This path will be walked in the opposite direction.`,
-      d:()=>fixPic(f,0),tb:()=>rowT('before',f.before.map(lab),k=>fixCls(f,k,0))});
-    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: after`,
-      x:`The orange path is walked in the opposite direction: the numbers now run the other way. Vertex x̄ = ${lab(f.xb)} is now passed between ${lab(f.x)} and ${lab(f.y)}, and between ${lab(f.x)} and ${lab(f.z)} (green). Each passage uses one matching edge and one F-edge, so the return is gone. The tour uses exactly the same edges as before.`,
-      d:()=>fixPic(f,1),tb:()=>rowT('before',f.before.map(lab),k=>fixCls(f,k,0))+rowT('after',f.after.map(lab),k=>fixCls(f,k,1))});
+    const X=lab(f.x),XB=lab(f.xb),Y=lab(f.y),Z=lab(f.z);
+    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: the problem`,fix:f,phase:0,
+      x:`Left: the tour drawn as a necklace, vertices in the order the tour visits them. Vertex x̄ = ${XB} appears twice (orange rings). At one visit the tour goes ${X} → ${XB} → ${X}, there and back along the same matching edge (red). That is not allowed. Right: at vertex ${XB} one passage uses both copies of the matching edge (red), the other uses the two F-edges to ${Y} and ${Z} (blue). Fix: cut the necklace at the two visits of ${XB} (black marks) and turn the yellow piece around.`,
+      d:()=>fixView(f,0,1),tb:()=>rowT('tour',f.before.map(lab),k=>fixCls(f,k,0))});
+    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: after turning the piece around`,fix:f,phase:1,
+      x:`The yellow piece now runs backwards (press "Play the reversal" to watch it turn). The necklace still contains every edge exactly once. Right: at vertex ${XB} both passages now use one matching edge and one F-edge (green): ${X} → ${XB} → ${Y} and ${X} → ${XB} → ${Z}. So the return is gone, and no other vertex changed.`,
+      d:()=>fixView(f,1,1),tb:()=>rowT('before',f.before.map(lab),k=>fixCls(f,k,0))+rowT('after',f.after.map(lab),k=>fixCls(f,k,1))});
   });
   const W=R.fin;
   FR.push({t:'Layers',x:'The final tour starts with an M-edge. Green = traversal of an M-edge at the first visits (layer 0), purple = at the second visits (layer 1).',
@@ -411,11 +455,16 @@ function showFrame(){
   $('stepRangeBox').hidden=f.range==null;
   if(f.range!=null){const r=$('stepRange');r.min=0;r.max=f.range;r.value=k;$('stepRangeN').textContent=`${k} / ${f.range}`;}
   $('stepTbl').innerHTML=f.tb?f.tb(k):'';
+  $('animBox').hidden=!f.fix;$('anim').hidden=!(f.fix&&f.phase===1);if(ANIM){cancelAnimationFrame(ANIM);ANIM=null;}
   $('prev').disabled=cur===0;$('next').disabled=cur===FR.length-1;
 }
 $('prev').onclick=()=>{if(cur>0){cur--;sub=FR[cur].range!=null?FR[cur].range:null;showFrame();}};
 $('next').onclick=()=>{if(cur<FR.length-1){cur++;sub=FR[cur].range!=null?0:null;showFrame();}};
 $('stepRange').oninput=e=>{sub=+e.target.value;showFrame();};
+$('gview').onchange=e=>{GVIEW=e.target.checked;showFrame();};
+$('anim').onclick=()=>{const f=FR[cur].fix;if(!f||GVIEW)return;if(ANIM)cancelAnimationFrame(ANIM);
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;const dur=reduce?1:1800,t0=performance.now();
+  const step=now=>{const t=Math.min(1,(now-t0)/dur);$('figS').innerHTML=fixView(f,1,t);if(t<1)ANIM=requestAnimationFrame(step);else ANIM=null;};ANIM=requestAnimationFrame(step);};
 $('src').value=EX[0].src;run(EX[0].src,EX[0].pos);
 })();
 </script>
