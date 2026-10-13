@@ -22,6 +22,8 @@ td,th{border:1px solid #999;padding:2px 5px;text-align:center;white-space:nowrap
 th{background:#eee;font-family:Helvetica,Arial,sans-serif;font-weight:normal;text-align:left}
 .y{background:#ffef99}
 .r{background:#f6c6c6}
+.g{background:#c9ecc9}
+.b{background:#cfe0fb}
 .c{color:#c60;font-weight:bold}
 .err{color:#b00}
 .small{font-size:13px;color:#444}
@@ -227,7 +229,13 @@ function construct(n,edges){
   const backs0=backs(tour0),fixes=[];let guard=0;
   for(;;){const b=backs(tour);if(!b.length||guard++>10*n)break;const i=b[0];
     const rot=tour.slice(i).concat(tour.slice(0,i));const xb=rot[1];let q=-1;for(let j=2;j<L;j++)if(rot[j]===xb){q=j;break;}
-    const nt=rot.slice(0,2).concat(rot.slice(2,q).reverse(),rot.slice(q));fixes.push({before:rot,after:nt,a:2,b:q-1,x:rot[0],xb});tour=nt;}
+    const y0=rot[q-1],z0=rot[q+1],lenA=q-2,lenB=L-q;let fx;
+    if(lenB<lenA){const bef=rot.slice(q-1).concat(rot.slice(0,q-1)),i0=L-q+1;
+      const nt=bef.slice(0,2).concat(bef.slice(2,i0+1).reverse(),bef.slice(i0+1));
+      fx={before:bef,after:nt,a:2,b:i0,x:rot[0],xb,y:y0,z:z0,retAt:'end'};tour=nt;}
+    else{const nt=rot.slice(0,2).concat(rot.slice(2,q).reverse(),rot.slice(q));
+      fx={before:rot,after:nt,a:2,b:q-1,x:rot[0],xb,y:y0,z:z0,retAt:'start'};tour=nt;}
+    fixes.push(fx);}
   let fin=tour.slice();if(mate[fin[0]]!==fin[1])fin=fin.slice(1).concat(fin.slice(0,1));
   const seen=new Set(),h=fin.map(v=>{const r=seen.has(v)?1:0;seen.add(v);return r;});
   const s={};edges.forEach(([u,v])=>s[key(u,v)]=0);let conflict=false;const setE={};
@@ -282,7 +290,7 @@ function renderAll(){
   const t0=R.tour0,Ln=t0.length,bad=new Set();R.backs0.forEach(i=>{bad.add(i);bad.add((i+1)%Ln);bad.add((i+2)%Ln);});
   $('tourText').textContent=`Length ${Ln}. Returns x, m(x), x: ${R.backs0.length} (marked red).`;
   $('tourTbl').innerHTML=tbl([['step',...t0.map((_,k)=>`<td>${k+1}</td>`)],['vertex',...t0.map((v,k)=>`<td class="${bad.has(k)?'r':''}">${lab(v)}</td>`)]]);
-  $('fixBox').innerHTML=R.fixes.length?R.fixes.map((f,i)=>`<p>Fix ${i+1}: return ${lab(f.x)}, ${lab(f.xb)}, ${lab(f.x)}. Reversed part in yellow.</p><div class="wide"><table>${tbl([['before',...f.before.map((v,k)=>`<td class="${k>=f.a&&k<=f.b?'y':(k<3?'r':'')}">${lab(v)}</td>`)],['after',...f.after.map((v,k)=>`<td class="${k>=f.a&&k<=f.b?'y':''}">${lab(v)}</td>`)]])}</table></div>`).join(''):'<p>No returns.</p>';
+  $('fixBox').innerHTML=R.fixes.length?R.fixes.map((f,i)=>`<p>Fix ${i+1}: return ${lab(f.x)}, ${lab(f.xb)}, ${lab(f.x)}. Reversed part in yellow.</p><div class="wide"><table>${tbl([['before',...f.before.map((v,k)=>`<td class="${fixCls(f,k,0)}">${lab(v)}</td>`)],['after',...f.after.map((v,k)=>`<td class="${fixCls(f,k,1)}">${lab(v)}</td>`)]])}</table></div>`).join(''):'<p>No returns.</p>';
   const W=R.fin,L2=W.length;
   $('labTbl').innerHTML=tbl([['k',...W.map((_,k)=>`<td>${k+1}</td>`)],['vertex',...W.map(v=>`<td>${lab(v)}</td>`)],['layer',...R.h.map(x=>`<td>${x}</td>`)],
     ['next edge',...W.map((v,k)=>{const w=W[(k+1)%L2],c=R.h[k]!==R.h[(k+1)%L2];return `<td class="${c?'c':''}">${R.mate[v]===w?'M':'F'}${c?' cross':''}</td>`;})]]);
@@ -334,6 +342,36 @@ function liftCopies(upto){const n=R.n,N=2*n,P={};
   for(let i=0;i<N;i++){const v=i%n,f=i>=n?1:0;o+=node(P[i],labL(v,f),r,fs);}
   if(upto>0&&upto<N){const p=P[R.cyc[upto%N][0]+R.cyc[upto%N][1]*n];o+=`<circle cx="${p[0]}" cy="${p[1]}" r="${r+5}" fill="none" stroke="${C.x}" stroke-width="2.5"/>`;}
   return o;}
+const ARC={red:'#c00',orange:'#e07b00',blue:'#0a5bc4',green:'#1f8a3b'};
+function fixEdges(f,phase){const b=f.b;if(phase)return{green:[0,1,b,b+1],red:[],blue:[]};
+  return f.retAt==='start'?{red:[0,1],blue:[b,b+1],green:[]}:{red:[b,b+1],blue:[0,1],green:[]};}
+function fixCls(f,k,phase){if(k>=f.a&&k<=f.b)return 'y';const E=fixEdges(f,phase);
+  const vs=c=>new Set(E[c].flatMap(i=>[i,i+1]));if(vs('red').has(k))return 'r';if(vs('blue').has(k))return 'b';if(vs('green').has(k))return 'g';return '';}
+function arrowEdge(u,v,col,offSign,num){const r=vSize()[0];const A=XS(u),B=XS(v);
+  const P=XS(Math.min(u,v)),Q=XS(Math.max(u,v));const dx=Q[0]-P[0],dy=Q[1]-P[1],l=Math.hypot(dx,dy)||1;const ox=-dy/l*4.5*offSign,oy=dx/l*4.5*offSign;
+  const ux=(B[0]-A[0])/l,uy=(B[1]-A[1])/l,sh=r+3;
+  const a=[A[0]+ox+ux*sh,A[1]+oy+uy*sh],b=[B[0]+ox-ux*sh,B[1]+oy-uy*sh];
+  const nx=-uy,ny=ux,base=[b[0]-ux*10,b[1]-uy*10];
+  let o=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${base[0].toFixed(1)}" y2="${base[1].toFixed(1)}" stroke="${ARC[col]}" stroke-width="3.2"/>`;
+  o+=`<polygon points="${b[0].toFixed(1)},${b[1].toFixed(1)} ${(base[0]+nx*5).toFixed(1)},${(base[1]+ny*5).toFixed(1)} ${(base[0]-nx*5).toFixed(1)},${(base[1]-ny*5).toFixed(1)}" fill="${ARC[col]}"/>`;
+  if(num!=null){const mx=(a[0]+b[0])/2+nx*11*(offSign||1),my=(a[1]+b[1])/2+ny*11*(offSign||1);
+    o+=`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="8" fill="#fff" stroke="${ARC[col]}" stroke-width="1.2"/><text x="${mx.toFixed(1)}" y="${(my+3.5).toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="10" fill="${ARC[col]}">${num}</text>`;}
+  return o;}
+function tagV(v,text,col,bar){const r=vSize()[0];const p=XS(v);const x=p[0]+r+5,y=p[1]-r-3;return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-family="Arial" font-size="15" font-weight="bold" fill="${ARC[col]}">${text}</text>`+(bar?`<line x1="${x.toFixed(1)}" y1="${(y-13).toFixed(1)}" x2="${(x+8).toFixed(1)}" y2="${(y-13).toFixed(1)}" stroke="${ARC[col]}" stroke-width="1.8"/>`:'');}
+function ringV(v,col){const r=vSize()[0];const p=XS(v);return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r+5}" fill="none" stroke="${ARC[col]}" stroke-width="2.5"/>`;}
+function fixPic(f,phase){
+  const t=phase?f.after:f.before,L=t.length;const cnt={};
+  let o=baseS('double',.15);
+  const seg=(k,col,num)=>{const u=t[k%L],v=t[(k+1)%L];let sg=0;if(R.mate[u]===v){const kk=key(u,v);cnt[kk]=(cnt[kk]||0)+1;sg=cnt[kk]===1?1:-1;}o+=arrowEdge(u,v,col,sg,num);};
+  const E=fixEdges(f,phase);
+  for(const c of ['red','blue','green'])for(const k of E[c])seg(k,c);
+  for(let k=f.a,i=1;k<f.b;k++,i++)seg(k,'orange',i);
+  o+=vertsS();
+  o+=ringV(f.xb,'orange')+ringV(f.x,phase?'green':'red');
+  o+=tagV(f.x,'x',phase?'green':'red')+tagV(f.xb,'x','orange',1);
+  if(f.y!==f.x&&f.y!==f.xb)o+=tagV(f.y,'y','blue');
+  if(f.z!==f.x&&f.z!==f.xb&&f.z!==f.y)o+=tagV(f.z,'z','blue');
+  return o;}
 function rowT(name,t,cls){return `<tr><th>${name}</th>${t.map((v,k)=>`<td class="${cls?cls(k):''}">${v}</td>`).join('')}</tr>`;}
 function buildFrames(){
   const n=R.n,t0=R.tour0,Ln=t0.length;FR=[];
@@ -346,8 +384,15 @@ function buildFrames(){
   const badV=new Set();R.backs0.forEach(i=>{bad.add((i+2)%Ln);badV.add(t0[(i+1)%Ln]);});
   FR.push({t:'Returns x, m(x), x',x:R.backs0.length?`The tour goes back along the same matching edge ${R.backs0.length} time${R.backs0.length>1?'s':''} (red). Such a return is not allowed, because the edge would have to be parallel and cross at the same time.`:'The tour has no returns, so nothing has to be fixed.',
     d:()=>tourS(t0,Ln,k=>{const u=t0[k],v=t0[(k+1)%Ln];return R.backs0.some(i=>(i===k||(i+1)%Ln===k))&&R.mate[u]===v?C.bad:'#bbb';},badV),tb:()=>rowT('vertex',t0.map(lab),k=>bad.has(k)?'r':'')});
-  R.fixes.forEach((f,i)=>FR.push({t:`Fix ${i+1} of ${R.fixes.length}`,x:`Return ${lab(f.x)}, ${lab(f.xb)}, ${lab(f.x)}. The part of the tour between the two visits of ${lab(f.xb)} is reversed (yellow). The tour still uses the same edges.`,
-    d:()=>tourS(f.after,f.after.length,k=>k>=f.a-1&&k<=f.b?C.hl:'#999',new Set([f.xb])),tb:()=>rowT('before',f.before.map(lab),k=>k>=f.a&&k<=f.b?'y':(k<3?'r':''))+rowT('after',f.after.map(lab),k=>k>=f.a&&k<=f.b?'y':'')}));
+  R.fixes.forEach((f,i)=>{
+    const m=f.b-f.a;
+    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: before`,
+      x:`Return: the tour goes x → x̄ → x, here ${lab(f.x)} → ${lab(f.xb)} → ${lab(f.x)} (red, both copies of the matching edge). Vertex x̄ = ${lab(f.xb)} is passed a second time between y = ${lab(f.y)} and z = ${lab(f.z)} (blue). The orange path joins the two visits of x̄; its ${m} steps are numbered in the order in which the tour walks them. This path will be walked in the opposite direction.`,
+      d:()=>fixPic(f,0),tb:()=>rowT('before',f.before.map(lab),k=>fixCls(f,k,0))});
+    FR.push({t:`Fix ${i+1} of ${R.fixes.length}: after`,
+      x:`The orange path is walked in the opposite direction: the numbers now run the other way. Vertex x̄ = ${lab(f.xb)} is now passed between ${lab(f.x)} and ${lab(f.y)}, and between ${lab(f.x)} and ${lab(f.z)} (green). Each passage uses one matching edge and one F-edge, so the return is gone. The tour uses exactly the same edges as before.`,
+      d:()=>fixPic(f,1),tb:()=>rowT('before',f.before.map(lab),k=>fixCls(f,k,0))+rowT('after',f.after.map(lab),k=>fixCls(f,k,1))});
+  });
   const W=R.fin;
   FR.push({t:'Layers',x:'The final tour starts with an M-edge. Green = traversal of an M-edge at the first visits (layer 0), purple = at the second visits (layer 1).',
     d:()=>tourS(W,W.length,k=>R.mate[W[k]]===W[(k+1)%W.length]?(R.h[k]?C.l1:C.l0):'#999'),tb:()=>rowT('vertex',W.map(lab))+rowT('layer',R.h,k=>R.h[k]?'':'')});
